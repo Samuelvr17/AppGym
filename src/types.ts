@@ -1,0 +1,42 @@
+export interface Set {
+  weight: number;
+  reps: number;
+}
+
+export interface Exercise {
+  id: string;
+  name: string;
+  sets: Set[];
+  technique?: string; // Técnica para la última serie
+  repRange?: string; // Rango de reps esperadas
+}
+
+export interface Routine {
+  id: string;
+  name: string;
+  exercises: Exercise[];
+  createdAt: string;
+}
+
+export interface Workout {
+  id: string;
+  routineId: string;
+  routineName: string;
+  date: string;
+  exercises: {
+    id: string;
+    name: string;
+    sets: Set[];
+    technique?: string;
+    repRange?: string;
+  }[];
+}
+
+export type Screen = 
+  | 'routines' 
+  | 'create-routine' 
+  | 'edit-routine' 
+  | 'routine-detail' 
+  | 'workout-session' 
+  | 'workout-history' 
+  | 'workout-detail';
