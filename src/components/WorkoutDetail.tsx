@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Target, Zap } from 'lucide-react';
+import { Calendar, Target, Zap, MessageSquare } from 'lucide-react';
 import { Workout } from '../types';
 import { formatDate } from '../utils/storage';
 
@@ -40,7 +40,7 @@ export function WorkoutDetail({ workout }: WorkoutDetailProps) {
               </div>
             )}
             
-            <div className="space-y-2">
+            <div className="space-y-2 mb-4">
               <div className="flex items-center text-sm text-gray-600 mb-2 font-medium">
                 <span className="w-8">Serie</span>
                 <span className="w-20 text-center">Peso</span>
@@ -55,6 +55,19 @@ export function WorkoutDetail({ workout }: WorkoutDetailProps) {
                 </div>
               ))}
             </div>
+
+            {/* Mostrar notas si existen */}
+            {exercise.notes && exercise.notes.trim() && (
+              <div className="border-t border-gray-100 pt-3">
+                <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  Notas
+                </div>
+                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  {exercise.notes}
+                </p>
+              </div>
+            )}
           </div>
         ))}
       </div>

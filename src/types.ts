@@ -9,6 +9,7 @@ export interface Exercise {
   sets: Set[];
   technique?: string; // Técnica para la última serie
   repRange?: string; // Rango de reps esperadas
+  notes?: string; // Notas del ejercicio durante el entrenamiento
 }
 
 export interface Routine {
@@ -29,6 +30,7 @@ export interface Workout {
     sets: Set[];
     technique?: string;
     repRange?: string;
+    notes?: string; // Notas del ejercicio durante el entrenamiento
   }[];
 }
 

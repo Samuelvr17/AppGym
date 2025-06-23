@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Target, Zap } from 'lucide-react';
+import { Check, Target, Zap, Plus, X, MessageSquare } from 'lucide-react';
 import { Routine, Workout, Exercise } from '../types';
 import { generateId } from '../utils/storage';
 
@@ -16,7 +16,8 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
     // Initialize with routine exercises but with empty weight/reps
     const workoutExercises = routine.exercises.map(exercise => ({
       ...exercise,
-      sets: exercise.sets.map(() => ({ weight: 0, reps: 0 }))
+      sets: exercise.sets.map(() => ({ weight: 0, reps: 0 })),
+      notes: '' // Initialize notes as empty
     }));
     setExercises(workoutExercises);
   }, [routine]);
@@ -34,6 +35,28 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
     ));
   };
 
+  const addSet = (exerciseId: string) => {
+    setExercises(exercises.map(ex =>
+      ex.id === exerciseId 
+        ? { ...ex, sets: [...ex.sets, { weight: 0, reps: 0 }] }
+        : ex
+    ));
+  };
+
+  const removeSet = (exerciseId: string, setIndex: number) => {
+    setExercises(exercises.map(ex =>
+      ex.id === exerciseId
+        ? { ...ex, sets: ex.sets.filter((_, index) => index !== setIndex) }
+        : ex
+    ));
+  };
+
+  const updateNotes = (exerciseId: string, notes: string) => {
+    setExercises(exercises.map(ex => 
+      ex.id === exerciseId ? { ...ex, notes } : ex
+    ));
+  };
+
   const handleSaveWorkout = () => {
     const workout: Workout = {
       id: generateId(),
@@ -45,7 +68,8 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
         name: ex.name,
         sets: ex.sets,
         technique: ex.technique,
-        repRange: ex.repRange
+        repRange: ex.repRange,
+        notes: ex.notes
       }))
     };
 
@@ -81,7 +105,7 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
               </div>
             )}
             
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               {exercise.sets.map((set, setIndex) => (
                 <div key={setIndex} className="flex items-center space-x-3">
                   <span className="text-sm font-medium text-gray-600 w-8">
@@ -107,8 +131,39 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
                     />
                     <span className="text-sm text-gray-500">reps</span>
                   </div>
+                  {exercise.sets.length > 1 && (
+                    <button
+                      onClick={() => removeSet(exercise.id, setIndex)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               ))}
+            </div>
+
+            <button
+              onClick={() => addSet(exercise.id)}
+              className="mb-4 text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Añadir serie
+            </button>
+
+            {/* Campo de notas */}
+            <div className="border-t border-gray-100 pt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <MessageSquare className="w-4 h-4 mr-1" />
+                Notas
+              </label>
+              <textarea
+                value={exercise.notes || ''}
+                onChange={(e) => updateNotes(exercise.id, e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                rows={2}
+                placeholder="Añade comentarios sobre este ejercicio..."
+              />
             </div>
           </div>
         ))}
