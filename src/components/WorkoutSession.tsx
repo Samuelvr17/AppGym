@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Target, Zap, Plus, X, MessageSquare } from 'lucide-react';
+import { Check, Target, Zap, Plus, X, MessageSquare, Clock, Timer } from 'lucide-react';
 import { Routine, Workout, Exercise } from '../types';
 import { generateId } from '../utils/storage';
 
@@ -11,6 +11,11 @@ interface WorkoutSessionProps {
 
 export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSessionProps) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [workoutStartTime, setWorkoutStartTime] = useState<number>(Date.now());
+  const [workoutDuration, setWorkoutDuration] = useState<number>(0);
+  const [activeRestTimer, setActiveRestTimer] = useState<string | null>(null); // exerciseId-setIndex
+  const [restTimers, setRestTimers] = useState<{[key: string]: number}>({});
+  const [restIntervals, setRestIntervals] = useState<{[key: string]: number}>({});
 
   useEffect(() => {
     // Initialize with routine exercises but with empty weight/reps
@@ -21,6 +26,94 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
     }));
     setExercises(workoutExercises);
   }, [routine]);
+
+  // Workout duration timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWorkoutDuration(Math.floor((Date.now() - workoutStartTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [workoutStartTime]);
+
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startRestTimer = (exerciseId: string, setIndex: number, duration: number) => {
+    const timerId = `${exerciseId}-${setIndex}`;
+    
+    // Clear any existing timer for this set
+    if (restIntervals[timerId]) {
+      clearInterval(restIntervals[timerId]);
+    }
+    
+    setActiveRestTimer(timerId);
+    setRestTimers(prev => ({ ...prev, [timerId]: duration }));
+    
+    const interval = setInterval(() => {
+      setRestTimers(prev => {
+        const newTime = prev[timerId] - 1;
+        if (newTime <= 0) {
+          // Timer finished
+          clearInterval(interval);
+          setActiveRestTimer(null);
+          
+          // Show notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('¡Tiempo de descanso terminado!', {
+              body: 'Es hora de continuar con la siguiente serie',
+              icon: '/vite.svg'
+            });
+          }
+          
+          // Vibrate if available
+          if ('vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200]);
+          }
+          
+          return { ...prev, [timerId]: 0 };
+        }
+        return { ...prev, [timerId]: newTime };
+      });
+    }, 1000);
+    
+    setRestIntervals(prev => ({ ...prev, [timerId]: interval }));
+  };
+
+  const stopRestTimer = (exerciseId: string, setIndex: number) => {
+    const timerId = `${exerciseId}-${setIndex}`;
+    
+    if (restIntervals[timerId]) {
+      clearInterval(restIntervals[timerId]);
+      setRestIntervals(prev => {
+        const newIntervals = { ...prev };
+        delete newIntervals[timerId];
+        return newIntervals;
+      });
+    }
+    
+    setActiveRestTimer(null);
+    setRestTimers(prev => {
+      const newTimers = { ...prev };
+      delete newTimers[timerId];
+      return newTimers;
+    });
+  };
 
   const updateSet = (exerciseId: string, setIndex: number, field: 'weight' | 'reps', value: number) => {
     setExercises(exercises.map(ex =>
@@ -63,6 +156,7 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
       routineId: routine.id,
       routineName: routine.name,
       date: new Date().toISOString(),
+      duration: workoutDuration,
       exercises: exercises.map(ex => ({
         id: ex.id,
         name: ex.name,
@@ -78,6 +172,19 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
 
   return (
     <div className="p-4 pb-20">
+      {/* Workout Timer Header */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Clock className="w-6 h-6 mr-2" />
+            <div>
+              <p className="text-sm opacity-90">Tiempo de entrenamiento</p>
+              <p className="text-2xl font-bold">{formatTime(workoutDuration)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{routine.name}</h2>
         <p className="text-gray-600">Registra tu entrenamiento</p>
@@ -131,6 +238,40 @@ export function WorkoutSession({ routine, onSaveWorkout, onCancel }: WorkoutSess
                     />
                     <span className="text-sm text-gray-500">reps</span>
                   </div>
+                  
+                  {/* Rest Timer for each set */}
+                  <div className="flex items-center space-x-2">
+                    {activeRestTimer === `${exercise.id}-${setIndex}` ? (
+                      <div className="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
+                        <Timer className="w-4 h-4 text-yellow-600 mr-1" />
+                        <span className="text-sm font-medium text-yellow-700">
+                          {formatTime(restTimers[`${exercise.id}-${setIndex}`] || 0)}
+                        </span>
+                        <button
+                          onClick={() => stopRestTimer(exercise.id, setIndex)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => startRestTimer(exercise.id, setIndex, 90)}
+                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium transition-colors"
+                        >
+                          1:30
+                        </button>
+                        <button
+                          onClick={() => startRestTimer(exercise.id, setIndex, 180)}
+                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium transition-colors"
+                        >
+                          3:00
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
                   {exercise.sets.length > 1 && (
                     <button
                       onClick={() => removeSet(exercise.id, setIndex)}

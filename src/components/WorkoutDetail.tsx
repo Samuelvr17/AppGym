@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Target, Zap, MessageSquare } from 'lucide-react';
+import { Calendar, Target, Zap, MessageSquare, Clock } from 'lucide-react';
 import { Workout } from '../types';
 import { formatDate } from '../utils/storage';
 
@@ -8,13 +8,31 @@ interface WorkoutDetailProps {
 }
 
 export function WorkoutDetail({ workout }: WorkoutDetailProps) {
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
   return (
     <div className="p-4 pb-20">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{workout.routineName}</h2>
-        <div className="flex items-center text-gray-600">
-          <Calendar className="w-4 h-4 mr-2" />
-          {formatDate(workout.date)}
+        <div className="space-y-2">
+          <div className="flex items-center text-gray-600">
+            <Calendar className="w-4 h-4 mr-2" />
+            {formatDate(workout.date)}
+          </div>
+          {workout.duration && (
+            <div className="flex items-center text-gray-600">
+              <Clock className="w-4 h-4 mr-2" />
+              Duración: {formatDuration(workout.duration)}
+            </div>
+          )}
         </div>
       </div>
 

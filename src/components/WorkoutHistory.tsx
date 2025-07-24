@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, TrendingUp } from 'lucide-react';
+import { Calendar, TrendingUp, Clock } from 'lucide-react';
 import { Workout } from '../types';
 import { formatDate, formatDateShort } from '../utils/storage';
 
@@ -12,6 +12,16 @@ export function WorkoutHistory({ workouts, onSelectWorkout }: WorkoutHistoryProp
   const sortedWorkouts = [...workouts].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
 
   return (
     <div className="p-4 pb-20">
@@ -38,7 +48,7 @@ export function WorkoutHistory({ workouts, onSelectWorkout }: WorkoutHistoryProp
                 <div>
                   <h3 className="font-semibold text-gray-900">{workout.routineName}</h3>
                   <p className="text-gray-500 text-sm mt-1">
-                    {workout.exercises.length} ejercicios
+                    {workout.exercises.length} ejercicios • {formatDuration(workout.duration || 0)}
                   </p>
                 </div>
                 <div className="text-right">
@@ -46,6 +56,12 @@ export function WorkoutHistory({ workouts, onSelectWorkout }: WorkoutHistoryProp
                     <Calendar className="w-4 h-4 mr-1" />
                     {formatDateShort(workout.date)}
                   </div>
+                  {workout.duration && (
+                    <div className="flex items-center text-gray-400 text-xs mt-1">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {formatDuration(workout.duration)}
+                    </div>
+                  )}
                 </div>
               </div>
             </button>

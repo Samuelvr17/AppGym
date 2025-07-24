@@ -24,6 +24,7 @@ export interface Workout {
   routineId: string;
   routineName: string;
   date: string;
+  duration: number; // Duration in seconds
   exercises: {
     id: string;
     name: string;
