@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
 import { RoutineList } from './components/RoutineList';
@@ -19,6 +19,48 @@ function App() {
   const [activeTab, setActiveTab] = useState<'routines' | 'history'>('routines');
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [selectedMesocycle, setSelectedMesocycle] = useState<string>('all');
+
+  useEffect(() => {
+    const needsUpdate = routines.some((routine) => !routine.mesocycle);
+    if (needsUpdate) {
+      setRoutines(
+        routines.map((routine) =>
+          routine.mesocycle ? routine : { ...routine, mesocycle: 'General' }
+        )
+      );
+    }
+  }, [routines, setRoutines]);
+
+  const routinesWithDefaults = useMemo(
+    () =>
+      routines.map((routine) => ({
+        ...routine,
+        mesocycle: routine.mesocycle || 'General',
+      })),
+    [routines]
+  );
+
+  const mesocycles = useMemo(() => {
+    const unique = new Set<string>();
+    routinesWithDefaults.forEach((routine) => unique.add(routine.mesocycle));
+    return Array.from(unique);
+  }, [routinesWithDefaults]);
+
+  useEffect(() => {
+    if (selectedMesocycle !== 'all' && !mesocycles.includes(selectedMesocycle)) {
+      setSelectedMesocycle('all');
+    }
+  }, [mesocycles, selectedMesocycle]);
+
+  const filteredRoutines = useMemo(() => {
+    if (selectedMesocycle === 'all') {
+      return routinesWithDefaults;
+    }
+    return routinesWithDefaults.filter(
+      (routine) => routine.mesocycle === selectedMesocycle
+    );
+  }, [routinesWithDefaults, selectedMesocycle]);
 
   const handleCreateRoutine = () => {
     setCurrentScreen('create-routine');
@@ -54,6 +96,24 @@ function App() {
     setWorkouts([...workouts, workout]);
     setCurrentScreen('routines');
     setSelectedRoutine(null);
+  };
+
+  const handleDeleteRoutine = (routineId: string) => {
+    setRoutines(routines.filter((routine) => routine.id !== routineId));
+    setWorkouts(workouts.filter((workout) => workout.routineId !== routineId));
+    setCurrentScreen('routines');
+    setSelectedRoutine(null);
+  };
+
+  const getLastWorkoutForRoutine = (routineId: string): Workout | undefined => {
+    const routineWorkouts = workouts
+      .filter((workout) => workout.routineId === routineId)
+      .sort(
+        (a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+    return routineWorkouts[0];
   };
 
   const handleSelectWorkout = (workout: Workout) => {
@@ -126,10 +186,13 @@ function App() {
         onBack={shouldShowBack() ? handleBack : undefined}
       />
 
-      <main className="pt-0">
+      <main className="pt-0 max-w-3xl mx-auto w-full">
         {currentScreen === 'routines' && (
           <RoutineList
-            routines={routines}
+            routines={filteredRoutines}
+            mesocycles={mesocycles}
+            selectedMesocycle={selectedMesocycle}
+            onSelectMesocycle={setSelectedMesocycle}
             onCreateRoutine={handleCreateRoutine}
             onSelectRoutine={handleSelectRoutine}
           />
@@ -137,6 +200,7 @@ function App() {
 
         {currentScreen === 'create-routine' && (
           <CreateRoutine
+            availableMesocycles={mesocycles}
             onSave={handleSaveRoutine}
             onCancel={handleBack}
           />
@@ -145,6 +209,7 @@ function App() {
         {currentScreen === 'edit-routine' && selectedRoutine && (
           <CreateRoutine
             routine={selectedRoutine}
+            availableMesocycles={mesocycles}
             onSave={handleSaveRoutine}
             onCancel={handleBack}
           />
@@ -155,12 +220,14 @@ function App() {
             routine={selectedRoutine}
             onStartWorkout={handleStartWorkout}
             onEditRoutine={handleEditRoutine}
+            onDeleteRoutine={handleDeleteRoutine}
           />
         )}
 
         {currentScreen === 'workout-session' && selectedRoutine && (
           <WorkoutSession
             routine={selectedRoutine}
+            previousWorkout={getLastWorkoutForRoutine(selectedRoutine.id)}
             onSaveWorkout={handleSaveWorkout}
             onCancel={handleBack}
           />

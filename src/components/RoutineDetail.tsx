@@ -1,18 +1,20 @@
 import React from 'react';
-import { Play, Edit, Target, Zap } from 'lucide-react';
+import { Play, Edit, Target, Zap, Trash2 } from 'lucide-react';
 import { Routine } from '../types';
 
 interface RoutineDetailProps {
   routine: Routine;
   onStartWorkout: () => void;
   onEditRoutine: () => void;
+  onDeleteRoutine: (routineId: string) => void;
 }
 
-export function RoutineDetail({ routine, onStartWorkout, onEditRoutine }: RoutineDetailProps) {
+export function RoutineDetail({ routine, onStartWorkout, onEditRoutine, onDeleteRoutine }: RoutineDetailProps) {
   return (
-    <div className="p-4 pb-20">
+    <div className="p-4 pb-24">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{routine.name}</h2>
+        <p className="text-sm uppercase tracking-wide text-blue-600 font-semibold mb-1">{routine.mesocycle}</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">{routine.name}</h2>
         <p className="text-gray-600">{routine.exercises.length} ejercicios</p>
       </div>
 
@@ -42,17 +44,28 @@ export function RoutineDetail({ routine, onStartWorkout, onEditRoutine }: Routin
         ))}
       </div>
 
-      <div className="flex space-x-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <button
+          onClick={() => {
+            if (window.confirm('¿Quieres eliminar esta rutina? Esta acción también borrará su historial.')) {
+              onDeleteRoutine(routine.id);
+            }
+          }}
+          className="w-full bg-red-50 text-red-600 py-4 px-6 rounded-xl font-semibold hover:bg-red-100 transition-colors flex items-center justify-center"
+        >
+          <Trash2 className="w-5 h-5 mr-2" />
+          Eliminar
+        </button>
         <button
           onClick={onEditRoutine}
-          className="flex-1 bg-gray-200 text-gray-800 py-4 px-6 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center"
+          className="w-full bg-gray-200 text-gray-800 py-4 px-6 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center"
         >
           <Edit className="w-5 h-5 mr-2" />
           Editar
         </button>
         <button
           onClick={onStartWorkout}
-          className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg transition-shadow flex items-center justify-center"
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg transition-shadow flex items-center justify-center"
         >
           <Play className="w-5 h-5 mr-2" />
           Iniciar
