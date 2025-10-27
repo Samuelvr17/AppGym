@@ -16,10 +16,14 @@ export function calculateMesocycleProgress(
 ): MesocycleProgress {
   const sequence = getMesocycleSequence(mesocycleName, routines);
   const totalRoutines = sequence.length;
+  const weekOffset = config?.weekOffset ?? 0;
+  const plannedWeeks = config?.durationWeeks ?? 0;
+  const displayTotalWeeks = plannedWeeks + weekOffset;
 
   const baseProgress: MesocycleProgress = {
     weeksCompleted: 0,
-    currentWeekNumber: totalRoutines > 0 ? 1 : 0,
+    currentWeekNumber: weekOffset + (totalRoutines > 0 ? 1 : 0),
+    displayTotalWeeks,
     currentSequenceIndex: 0,
     totalRoutines,
     lastRoutineId: undefined,
@@ -97,9 +101,7 @@ export function calculateMesocycleProgress(
 
   const baseWeek = isWeekComplete ? weeksCompleted : weeksCompleted + 1;
   const safeWeek = Math.max(baseWeek, 1);
-  const plannedWeeks = config.durationWeeks ?? 0;
-  const currentWeekNumber =
-    plannedWeeks > 0 ? Math.min(safeWeek, plannedWeeks) : safeWeek;
+  const currentWeekNumber = weekOffset + safeWeek;
 
   const nextRoutineId = sequence[pointer]?.id ?? sequence[0]?.id;
 
@@ -109,6 +111,7 @@ export function calculateMesocycleProgress(
   return {
     weeksCompleted,
     currentWeekNumber,
+    displayTotalWeeks,
     currentSequenceIndex: pointer,
     totalRoutines,
     lastRoutineId,

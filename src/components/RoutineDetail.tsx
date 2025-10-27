@@ -23,8 +23,13 @@ export function RoutineDetail({
   sequence,
   onResetMesocycle,
 }: RoutineDetailProps) {
-  const totalWeeks = mesocycleConfig?.durationWeeks;
-  const currentWeek = mesocycleProgress?.currentWeekNumber ?? (totalWeeks ? 1 : 0);
+  const blockDuration = mesocycleConfig?.durationWeeks;
+  const displayTotalWeeks =
+    mesocycleProgress?.displayTotalWeeks ??
+    ((mesocycleConfig?.durationWeeks ?? 0) + (mesocycleConfig?.weekOffset ?? 0));
+  const currentWeek =
+    mesocycleProgress?.currentWeekNumber ??
+    (mesocycleConfig ? (mesocycleConfig.weekOffset ?? 0) + 1 : 0);
   const isNextRoutine = mesocycleProgress?.nextRoutineId === routine.id;
   const completedCycles = mesocycleConfig?.completedCycleCount ?? 0;
   const routineIndex = sequence.findIndex((item) => item.id === routine.id);
@@ -37,13 +42,13 @@ export function RoutineDetail({
       : sequence.find((item) => item.id === mesocycleProgress?.nextRoutineId)?.name;
   const isCycleComplete =
     Boolean(
-      totalWeeks &&
+      blockDuration &&
         mesocycleProgress?.isMesocycleComplete &&
-        mesocycleProgress.weeksCompleted >= totalWeeks
+        mesocycleProgress.weeksCompleted >= blockDuration
     );
 
   const handleResetMesocycle = () => {
-    const baseDuration = totalWeeks ?? 4;
+    const baseDuration = blockDuration ?? 4;
     const input = window.prompt(
       '¿Cuántas semanas tendrá el siguiente mesociclo?',
       String(baseDuration)
@@ -69,9 +74,9 @@ export function RoutineDetail({
         <h2 className="text-2xl font-bold text-gray-900 mb-1">{routine.name}</h2>
         <p className="text-gray-600">{routine.exercises.length} ejercicios</p>
         <div className="flex flex-wrap gap-2 mt-3">
-          {totalWeeks ? (
+          {displayTotalWeeks ? (
             <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
-              Semana {currentWeek} de {totalWeeks}
+              Semana {currentWeek} de {displayTotalWeeks}
             </span>
           ) : (
             <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
@@ -155,7 +160,7 @@ export function RoutineDetail({
         </button>
       </div>
 
-      {totalWeeks && (
+      {blockDuration && (
         <div className="mt-6">
           <button
             onClick={handleResetMesocycle}

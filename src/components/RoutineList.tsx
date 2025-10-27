@@ -74,8 +74,12 @@ export function RoutineList({
             const progress = mesocycleProgress[routine.mesocycle];
             const config = mesocycleConfigs[routine.mesocycle];
             const isNextRoutine = progress?.nextRoutineId === routine.id;
-            const totalWeeks = config?.durationWeeks;
-            const currentWeek = progress?.currentWeekNumber ?? (totalWeeks ? 1 : 0);
+            const displayTotalWeeks =
+              progress?.displayTotalWeeks ??
+              ((config?.durationWeeks ?? 0) + (config?.weekOffset ?? 0));
+            const currentWeek =
+              progress?.currentWeekNumber ??
+              (config ? (config.weekOffset ?? 0) + 1 : 0);
 
             return (
               <button
@@ -91,9 +95,9 @@ export function RoutineList({
                     {routine.exercises.length} ejercicios
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
-                    {totalWeeks ? (
+                    {displayTotalWeeks ? (
                       <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
-                        Semana {currentWeek} de {totalWeeks}
+                        Semana {currentWeek} de {displayTotalWeeks}
                       </span>
                     ) : (
                       <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
