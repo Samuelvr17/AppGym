@@ -108,6 +108,7 @@ function App() {
             'startDate' in updates ? updates.startDate : existing?.startDate,
           completedCycleCount:
             updates.completedCycleCount ?? existing?.completedCycleCount ?? 0,
+          weekOffset: updates.weekOffset ?? existing?.weekOffset ?? 0,
         };
 
         return {
@@ -130,11 +131,14 @@ function App() {
         const existing = prev[key];
         const nextDuration =
           durationWeeks ?? existing?.durationWeeks ?? 4;
+        const concludedDuration = existing?.durationWeeks ?? 0;
+        const accumulatedOffset = (existing?.weekOffset ?? 0) + concludedDuration;
 
         const next: MesocycleConfig = {
           durationWeeks: nextDuration,
           startDate: undefined,
           completedCycleCount: (existing?.completedCycleCount ?? 0) + 1,
+          weekOffset: accumulatedOffset,
         };
 
         return {
@@ -213,6 +217,7 @@ function App() {
         durationWeeks: existingConfig?.durationWeeks ?? 4,
         startDate: existingConfig?.startDate ?? workout.date,
         completedCycleCount: existingConfig?.completedCycleCount ?? 0,
+        weekOffset: existingConfig?.weekOffset ?? 0,
       };
 
       setMesocycleConfigs((prev) => {
@@ -223,6 +228,7 @@ function App() {
           startDate: current?.startDate ?? configForProgress.startDate,
           completedCycleCount:
             current?.completedCycleCount ?? configForProgress.completedCycleCount,
+          weekOffset: current?.weekOffset ?? configForProgress.weekOffset,
         };
         configForProgress = nextConfig;
         return {

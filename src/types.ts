@@ -40,11 +40,13 @@ export interface MesocycleConfig {
   durationWeeks: number;
   startDate?: string;
   completedCycleCount: number;
+  weekOffset: number;
 }
 
 export interface MesocycleProgress {
   weeksCompleted: number;
   currentWeekNumber: number;
+  displayTotalWeeks: number;
   currentSequenceIndex: number;
   totalRoutines: number;
   lastRoutineId?: string;
