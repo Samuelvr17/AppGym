@@ -1,21 +1,104 @@
 import React from 'react';
-import { Play, Edit, Target, Zap, Trash2 } from 'lucide-react';
-import { Routine } from '../types';
+import { Play, Edit, Target, Zap, Trash2, RefreshCw } from 'lucide-react';
+import { Routine, MesocycleConfig, MesocycleProgress } from '../types';
 
 interface RoutineDetailProps {
   routine: Routine;
   onStartWorkout: () => void;
   onEditRoutine: () => void;
   onDeleteRoutine: (routineId: string) => void;
+  mesocycleConfig?: MesocycleConfig;
+  mesocycleProgress?: MesocycleProgress;
+  sequence: Routine[];
+  onResetMesocycle: (mesocycle: string, durationWeeks?: number) => void;
 }
 
-export function RoutineDetail({ routine, onStartWorkout, onEditRoutine, onDeleteRoutine }: RoutineDetailProps) {
+export function RoutineDetail({
+  routine,
+  onStartWorkout,
+  onEditRoutine,
+  onDeleteRoutine,
+  mesocycleConfig,
+  mesocycleProgress,
+  sequence,
+  onResetMesocycle,
+}: RoutineDetailProps) {
+  const totalWeeks = mesocycleConfig?.durationWeeks;
+  const currentWeek = mesocycleProgress?.currentWeekNumber ?? (totalWeeks ? 1 : 0);
+  const isNextRoutine = mesocycleProgress?.nextRoutineId === routine.id;
+  const completedCycles = mesocycleConfig?.completedCycleCount ?? 0;
+  const routineIndex = sequence.findIndex((item) => item.id === routine.id);
+  const nextRoutineIndex = routineIndex >= 0 && sequence.length > 0
+    ? (routineIndex + 1) % sequence.length
+    : -1;
+  const nextRoutineName =
+    isNextRoutine && nextRoutineIndex >= 0
+      ? sequence[nextRoutineIndex]?.name
+      : sequence.find((item) => item.id === mesocycleProgress?.nextRoutineId)?.name;
+  const isCycleComplete =
+    Boolean(
+      totalWeeks &&
+        mesocycleProgress?.isMesocycleComplete &&
+        mesocycleProgress.weeksCompleted >= totalWeeks
+    );
+
+  const handleResetMesocycle = () => {
+    const baseDuration = totalWeeks ?? 4;
+    const input = window.prompt(
+      '¿Cuántas semanas tendrá el siguiente mesociclo?',
+      String(baseDuration)
+    );
+
+    if (input === null) {
+      return;
+    }
+
+    const parsed = Number.parseInt(input, 10);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+      alert('Introduce una duración válida en semanas');
+      return;
+    }
+
+    onResetMesocycle(routine.mesocycle, parsed);
+  };
+
   return (
     <div className="p-4 pb-24">
       <div className="mb-6">
         <p className="text-sm uppercase tracking-wide text-blue-600 font-semibold mb-1">{routine.mesocycle}</p>
         <h2 className="text-2xl font-bold text-gray-900 mb-1">{routine.name}</h2>
         <p className="text-gray-600">{routine.exercises.length} ejercicios</p>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {totalWeeks ? (
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+              Semana {currentWeek} de {totalWeeks}
+            </span>
+          ) : (
+            <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+              Sin duración definida
+            </span>
+          )}
+          {isNextRoutine && (
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+              Próxima en la secuencia
+            </span>
+          )}
+          {isCycleComplete && (
+            <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
+              Mesociclo completado
+            </span>
+          )}
+          {completedCycles > 0 && (
+            <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+              Ciclos finalizados: {completedCycles}
+            </span>
+          )}
+        </div>
+        {nextRoutineName && (
+          <p className="text-sm text-gray-500 mt-2">
+            Próxima rutina planificada: <span className="font-medium text-gray-700">{nextRoutineName}</span>
+          </p>
+        )}
       </div>
 
       <div className="space-y-4 mb-8">
@@ -71,6 +154,18 @@ export function RoutineDetail({ routine, onStartWorkout, onEditRoutine, onDelete
           Iniciar
         </button>
       </div>
+
+      {totalWeeks && (
+        <div className="mt-6">
+          <button
+            onClick={handleResetMesocycle}
+            className="w-full bg-indigo-50 text-indigo-700 py-3 px-6 rounded-xl font-semibold hover:bg-indigo-100 transition-colors flex items-center justify-center"
+          >
+            <RefreshCw className="w-5 h-5 mr-2" />
+            Iniciar siguiente mesociclo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
