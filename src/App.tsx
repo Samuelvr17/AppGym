@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
 import { RoutineList } from './components/RoutineList';
@@ -8,12 +8,25 @@ import { WorkoutSession } from './components/WorkoutSession';
 import { WorkoutHistory } from './components/WorkoutHistory';
 import { WorkoutDetail } from './components/WorkoutDetail';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { Routine, Workout, Screen } from './types';
+import {
+  Routine,
+  Workout,
+  Screen,
+  MesocycleConfig,
+  MesocycleProgress,
+} from './types';
 import { storageKeys } from './utils/storage';
+import {
+  calculateMesocycleProgress,
+  getMesocycleSequence,
+} from './utils/mesocycles';
 
 function App() {
   const [routines, setRoutines] = useLocalStorage<Routine[]>(storageKeys.routines, []);
   const [workouts, setWorkouts] = useLocalStorage<Workout[]>(storageKeys.workouts, []);
+  const [mesocycleConfigs, setMesocycleConfigs] = useLocalStorage<
+    Record<string, MesocycleConfig>
+  >(storageKeys.mesocycles, {});
   
   const [currentScreen, setCurrentScreen] = useState<Screen>('routines');
   const [activeTab, setActiveTab] = useState<'routines' | 'history'>('routines');
@@ -39,6 +52,98 @@ function App() {
         mesocycle: routine.mesocycle || 'General',
       })),
     [routines]
+  );
+
+  const mesocycleSequences = useMemo(() => {
+    const sequences: Record<string, Routine[]> = {};
+    const names = new Set<string>();
+
+    routinesWithDefaults.forEach((routine) => {
+      names.add(routine.mesocycle);
+    });
+
+    names.forEach((name) => {
+      sequences[name] = getMesocycleSequence(name, routinesWithDefaults);
+    });
+
+    return sequences;
+  }, [routinesWithDefaults]);
+
+  const mesocycleProgress = useMemo(() => {
+    const progressMap: Record<string, MesocycleProgress> = {};
+    const names = new Set<string>();
+
+    routinesWithDefaults.forEach((routine) => {
+      names.add(routine.mesocycle);
+    });
+    Object.keys(mesocycleConfigs).forEach((name) => names.add(name));
+
+    names.forEach((name) => {
+      progressMap[name] = calculateMesocycleProgress(
+        name,
+        routinesWithDefaults,
+        workouts,
+        mesocycleConfigs[name]
+      );
+    });
+
+    return progressMap;
+  }, [routinesWithDefaults, workouts, mesocycleConfigs]);
+
+  const updateMesocycleConfig = useCallback(
+    (mesocycle: string, updates: Partial<MesocycleConfig>) => {
+      const key = mesocycle.trim();
+      if (!key) {
+        return;
+      }
+
+      setMesocycleConfigs((prev) => {
+        const existing = prev[key];
+        const next: MesocycleConfig = {
+          durationWeeks:
+            'durationWeeks' in updates && updates.durationWeeks !== undefined
+              ? updates.durationWeeks
+              : existing?.durationWeeks ?? 4,
+          startDate:
+            'startDate' in updates ? updates.startDate : existing?.startDate,
+          completedCycleCount:
+            updates.completedCycleCount ?? existing?.completedCycleCount ?? 0,
+        };
+
+        return {
+          ...prev,
+          [key]: next,
+        };
+      });
+    },
+    [setMesocycleConfigs]
+  );
+
+  const resetMesocycle = useCallback(
+    (mesocycle: string, durationWeeks?: number) => {
+      const key = mesocycle.trim();
+      if (!key) {
+        return;
+      }
+
+      setMesocycleConfigs((prev) => {
+        const existing = prev[key];
+        const nextDuration =
+          durationWeeks ?? existing?.durationWeeks ?? 4;
+
+        const next: MesocycleConfig = {
+          durationWeeks: nextDuration,
+          startDate: undefined,
+          completedCycleCount: (existing?.completedCycleCount ?? 0) + 1,
+        };
+
+        return {
+          ...prev,
+          [key]: next,
+        };
+      });
+    },
+    [setMesocycleConfigs]
   );
 
   const mesocycles = useMemo(() => {
@@ -93,7 +198,60 @@ function App() {
   };
 
   const handleSaveWorkout = (workout: Workout) => {
-    setWorkouts([...workouts, workout]);
+    const routine = routinesWithDefaults.find(
+      (item) => item.id === workout.routineId
+    );
+
+    const updatedWorkouts = [...workouts, workout];
+    setWorkouts(updatedWorkouts);
+
+    if (routine) {
+      const mesocycleName = routine.mesocycle;
+      const existingConfig = mesocycleConfigs[mesocycleName];
+
+      let configForProgress: MesocycleConfig = {
+        durationWeeks: existingConfig?.durationWeeks ?? 4,
+        startDate: existingConfig?.startDate ?? workout.date,
+        completedCycleCount: existingConfig?.completedCycleCount ?? 0,
+      };
+
+      setMesocycleConfigs((prev) => {
+        const current = prev[mesocycleName];
+        const nextConfig: MesocycleConfig = {
+          durationWeeks:
+            current?.durationWeeks ?? configForProgress.durationWeeks,
+          startDate: current?.startDate ?? configForProgress.startDate,
+          completedCycleCount:
+            current?.completedCycleCount ?? configForProgress.completedCycleCount,
+        };
+        configForProgress = nextConfig;
+        return {
+          ...prev,
+          [mesocycleName]: nextConfig,
+        };
+      });
+
+      const progressAfterSave = calculateMesocycleProgress(
+        mesocycleName,
+        routinesWithDefaults,
+        updatedWorkouts,
+        configForProgress
+      );
+
+      if (
+        progressAfterSave.isMesocycleComplete &&
+        progressAfterSave.lastRoutineId === workout.routineId &&
+        progressAfterSave.weeksCompleted === configForProgress.durationWeeks
+      ) {
+        const message = `Mesociclo "${mesocycleName}" completado tras ${configForProgress.durationWeeks} semanas.`;
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Mesociclo completado', { body: message });
+        } else {
+          alert(message);
+        }
+      }
+    }
+
     setCurrentScreen('routines');
     setSelectedRoutine(null);
   };
@@ -195,12 +353,16 @@ function App() {
             onSelectMesocycle={setSelectedMesocycle}
             onCreateRoutine={handleCreateRoutine}
             onSelectRoutine={handleSelectRoutine}
+            mesocycleConfigs={mesocycleConfigs}
+            mesocycleProgress={mesocycleProgress}
           />
         )}
 
         {currentScreen === 'create-routine' && (
           <CreateRoutine
             availableMesocycles={mesocycles}
+            mesocycleConfigs={mesocycleConfigs}
+            onConfigureMesocycle={updateMesocycleConfig}
             onSave={handleSaveRoutine}
             onCancel={handleBack}
           />
@@ -210,6 +372,8 @@ function App() {
           <CreateRoutine
             routine={selectedRoutine}
             availableMesocycles={mesocycles}
+            mesocycleConfigs={mesocycleConfigs}
+            onConfigureMesocycle={updateMesocycleConfig}
             onSave={handleSaveRoutine}
             onCancel={handleBack}
           />
@@ -221,6 +385,10 @@ function App() {
             onStartWorkout={handleStartWorkout}
             onEditRoutine={handleEditRoutine}
             onDeleteRoutine={handleDeleteRoutine}
+            mesocycleConfig={mesocycleConfigs[selectedRoutine.mesocycle]}
+            mesocycleProgress={mesocycleProgress[selectedRoutine.mesocycle]}
+            sequence={mesocycleSequences[selectedRoutine.mesocycle] || []}
+            onResetMesocycle={resetMesocycle}
           />
         )}
 
@@ -230,6 +398,9 @@ function App() {
             previousWorkout={getLastWorkoutForRoutine(selectedRoutine.id)}
             onSaveWorkout={handleSaveWorkout}
             onCancel={handleBack}
+            mesocycleConfig={mesocycleConfigs[selectedRoutine.mesocycle]}
+            mesocycleProgress={mesocycleProgress[selectedRoutine.mesocycle]}
+            sequence={mesocycleSequences[selectedRoutine.mesocycle] || []}
           />
         )}
 

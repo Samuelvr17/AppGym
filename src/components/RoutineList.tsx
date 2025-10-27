@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Dumbbell, FolderOpen } from 'lucide-react';
-import { Routine } from '../types';
+import { Routine, MesocycleConfig, MesocycleProgress } from '../types';
 
 interface RoutineListProps {
   routines: Routine[];
@@ -9,6 +9,8 @@ interface RoutineListProps {
   onSelectMesocycle: (mesocycle: string) => void;
   onCreateRoutine: () => void;
   onSelectRoutine: (routine: Routine) => void;
+  mesocycleConfigs: Record<string, MesocycleConfig>;
+  mesocycleProgress: Record<string, MesocycleProgress>;
 }
 
 export function RoutineList({
@@ -18,6 +20,8 @@ export function RoutineList({
   onSelectMesocycle,
   onCreateRoutine,
   onSelectRoutine,
+  mesocycleConfigs,
+  mesocycleProgress,
 }: RoutineListProps) {
   const options = ['all', ...mesocycles];
 
@@ -66,23 +70,49 @@ export function RoutineList({
         </div>
       ) : (
         <div className="space-y-3">
-          {routines.map((routine) => (
-            <button
-              key={routine.id}
-              onClick={() => onSelectRoutine(routine)}
-              className="w-full bg-white border border-gray-200 rounded-xl p-4 text-left shadow-sm hover:shadow-md transition-shadow"
-            >
-              <h3 className="font-semibold text-gray-900 text-lg">{routine.name}</h3>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-3 mt-1">
-                <p className="text-gray-500 text-sm">
-                  {routine.exercises.length} ejercicios
-                </p>
-                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full mt-2 sm:mt-0">
-                  {routine.mesocycle}
-                </span>
-              </div>
-            </button>
-          ))}
+          {routines.map((routine) => {
+            const progress = mesocycleProgress[routine.mesocycle];
+            const config = mesocycleConfigs[routine.mesocycle];
+            const isNextRoutine = progress?.nextRoutineId === routine.id;
+            const totalWeeks = config?.durationWeeks;
+            const currentWeek = progress?.currentWeekNumber ?? (totalWeeks ? 1 : 0);
+
+            return (
+              <button
+                key={routine.id}
+                onClick={() => onSelectRoutine(routine)}
+                className={`w-full bg-white border rounded-xl p-4 text-left shadow-sm hover:shadow-md transition-shadow ${
+                  isNextRoutine ? 'border-blue-400 shadow-blue-100' : 'border-gray-200'
+                }`}
+              >
+                <h3 className="font-semibold text-gray-900 text-lg">{routine.name}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-3 mt-1">
+                  <p className="text-gray-500 text-sm">
+                    {routine.exercises.length} ejercicios
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+                    {totalWeeks ? (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+                        Semana {currentWeek} de {totalWeeks}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                        Sin duración definida
+                      </span>
+                    )}
+                    {isNextRoutine && (
+                      <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                        Próxima en la secuencia
+                      </span>
+                    )}
+                    <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                      {routine.mesocycle}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

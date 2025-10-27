@@ -3,6 +3,7 @@ import { Routine, Workout } from '../types';
 export const storageKeys = {
   routines: 'gym-tracker-routines',
   workouts: 'gym-tracker-workouts',
+  mesocycles: 'gym-tracker-mesocycles',
 };
 
 export function generateId(): string {

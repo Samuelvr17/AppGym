@@ -36,11 +36,29 @@ export interface Workout {
   }[];
 }
 
-export type Screen = 
-  | 'routines' 
-  | 'create-routine' 
-  | 'edit-routine' 
-  | 'routine-detail' 
-  | 'workout-session' 
-  | 'workout-history' 
+export interface MesocycleConfig {
+  durationWeeks: number;
+  startDate?: string;
+  completedCycleCount: number;
+}
+
+export interface MesocycleProgress {
+  weeksCompleted: number;
+  currentWeekNumber: number;
+  currentSequenceIndex: number;
+  totalRoutines: number;
+  lastRoutineId?: string;
+  nextRoutineId?: string;
+  isWeekComplete: boolean;
+  isMesocycleComplete: boolean;
+}
+
+export type Screen =
+  | 'routines'
+  | 'create-routine'
+  | 'edit-routine'
+  | 'routine-detail'
+  | 'workout-session'
+  | 'workout-history'
   | 'workout-detail';
+

@@ -1,33 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
-import { Routine, Exercise } from '../types';
+import { Routine, Exercise, MesocycleConfig } from '../types';
 import { generateId } from '../utils/storage';
 
 interface CreateRoutineProps {
   routine?: Routine;
   availableMesocycles: string[];
+  mesocycleConfigs: Record<string, MesocycleConfig>;
+  onConfigureMesocycle: (mesocycle: string, config: Partial<MesocycleConfig>) => void;
   onSave: (routine: Routine) => void;
   onCancel: () => void;
 }
 
-export function CreateRoutine({ routine, availableMesocycles, onSave, onCancel }: CreateRoutineProps) {
+export function CreateRoutine({
+  routine,
+  availableMesocycles,
+  mesocycleConfigs,
+  onConfigureMesocycle,
+  onSave,
+  onCancel,
+}: CreateRoutineProps) {
   const [routineName, setRoutineName] = useState('');
   const [mesocycle, setMesocycle] = useState('');
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [durationWeeks, setDurationWeeks] = useState<number>(4);
 
   useEffect(() => {
     if (routine) {
       setRoutineName(routine.name);
       setMesocycle(routine.mesocycle);
       setExercises(routine.exercises);
+      const existingConfig = mesocycleConfigs[routine.mesocycle];
+      setDurationWeeks(existingConfig?.durationWeeks ?? 4);
     }
-  }, [routine]);
+  }, [routine, mesocycleConfigs]);
 
   useEffect(() => {
     if (!routine && !mesocycle && availableMesocycles.length > 0) {
       setMesocycle(availableMesocycles[0]);
     }
   }, [routine, mesocycle, availableMesocycles]);
+
+  useEffect(() => {
+    if (!mesocycle) {
+      return;
+    }
+
+    const existingConfig = mesocycleConfigs[mesocycle];
+    if (existingConfig) {
+      setDurationWeeks(existingConfig.durationWeeks);
+    } else if (!routine) {
+      setDurationWeeks(4);
+    }
+  }, [mesocycle, mesocycleConfigs, routine]);
 
   const addExercise = () => {
     const newExercise: Exercise = {
@@ -108,6 +133,11 @@ export function CreateRoutine({ routine, availableMesocycles, onSave, onCancel }
       return;
     }
 
+    if (!durationWeeks || durationWeeks <= 0) {
+      alert('Define una duración válida en semanas');
+      return;
+    }
+
     const newRoutine: Routine = {
       id: routine?.id || generateId(),
       name: routineName,
@@ -115,6 +145,10 @@ export function CreateRoutine({ routine, availableMesocycles, onSave, onCancel }
       exercises,
       createdAt: routine?.createdAt || new Date().toISOString(),
     };
+
+    onConfigureMesocycle(newRoutine.mesocycle, {
+      durationWeeks,
+    });
 
     onSave(newRoutine);
   };
@@ -138,6 +172,25 @@ export function CreateRoutine({ routine, availableMesocycles, onSave, onCancel }
             <option key={option} value={option} />
           ))}
         </datalist>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Duración (semanas)
+        </label>
+        <input
+          type="number"
+          min={1}
+          value={Number.isFinite(durationWeeks) ? durationWeeks : ''}
+          onChange={(e) => setDurationWeeks(Number(e.target.value))}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Ej: 6"
+        />
+        {mesocycle && mesocycleConfigs[mesocycle] && (
+          <p className="text-xs text-gray-500 mt-1">
+            Actualmente configurado en {mesocycleConfigs[mesocycle].durationWeeks} semanas
+          </p>
+        )}
       </div>
 
       <div className="mb-6">
