@@ -5,20 +5,29 @@ import { generateId } from '../utils/storage';
 
 interface CreateRoutineProps {
   routine?: Routine;
+  availableMesocycles: string[];
   onSave: (routine: Routine) => void;
   onCancel: () => void;
 }
 
-export function CreateRoutine({ routine, onSave, onCancel }: CreateRoutineProps) {
+export function CreateRoutine({ routine, availableMesocycles, onSave, onCancel }: CreateRoutineProps) {
   const [routineName, setRoutineName] = useState('');
+  const [mesocycle, setMesocycle] = useState('');
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
     if (routine) {
       setRoutineName(routine.name);
+      setMesocycle(routine.mesocycle);
       setExercises(routine.exercises);
     }
   }, [routine]);
+
+  useEffect(() => {
+    if (!routine && !mesocycle && availableMesocycles.length > 0) {
+      setMesocycle(availableMesocycles[0]);
+    }
+  }, [routine, mesocycle, availableMesocycles]);
 
   const addExercise = () => {
     const newExercise: Exercise = {
@@ -102,6 +111,7 @@ export function CreateRoutine({ routine, onSave, onCancel }: CreateRoutineProps)
     const newRoutine: Routine = {
       id: routine?.id || generateId(),
       name: routineName,
+      mesocycle: mesocycle.trim() || 'General',
       exercises,
       createdAt: routine?.createdAt || new Date().toISOString(),
     };
@@ -111,6 +121,25 @@ export function CreateRoutine({ routine, onSave, onCancel }: CreateRoutineProps)
 
   return (
     <div className="p-4 pb-20">
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Mesociclo
+        </label>
+        <input
+          type="text"
+          value={mesocycle}
+          onChange={(e) => setMesocycle(e.target.value)}
+          list="mesocycle-options"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Ej: Mesociclo 1"
+        />
+        <datalist id="mesocycle-options">
+          {availableMesocycles.map((option) => (
+            <option key={option} value={option} />
+          ))}
+        </datalist>
+      </div>
+
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Nombre de la Rutina

@@ -15,6 +15,7 @@ export interface Exercise {
 export interface Routine {
   id: string;
   name: string;
+  mesocycle: string;
   exercises: Exercise[];
   createdAt: string;
 }
