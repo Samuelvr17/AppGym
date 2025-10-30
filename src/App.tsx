@@ -109,6 +109,8 @@ function App() {
           completedCycleCount:
             updates.completedCycleCount ?? existing?.completedCycleCount ?? 0,
           weekOffset: updates.weekOffset ?? existing?.weekOffset ?? 0,
+          completedWeeksInCycle:
+            updates.completedWeeksInCycle ?? existing?.completedWeeksInCycle ?? 0,
         };
 
         return {
@@ -139,6 +141,7 @@ function App() {
           startDate: undefined,
           completedCycleCount: (existing?.completedCycleCount ?? 0) + 1,
           weekOffset: accumulatedOffset,
+          completedWeeksInCycle: 0,
         };
 
         return {
@@ -218,6 +221,7 @@ function App() {
         startDate: existingConfig?.startDate ?? workout.date,
         completedCycleCount: existingConfig?.completedCycleCount ?? 0,
         weekOffset: existingConfig?.weekOffset ?? 0,
+        completedWeeksInCycle: existingConfig?.completedWeeksInCycle ?? 0,
       };
 
       setMesocycleConfigs((prev) => {
@@ -229,6 +233,8 @@ function App() {
           completedCycleCount:
             current?.completedCycleCount ?? configForProgress.completedCycleCount,
           weekOffset: current?.weekOffset ?? configForProgress.weekOffset,
+          completedWeeksInCycle:
+            current?.completedWeeksInCycle ?? configForProgress.completedWeeksInCycle,
         };
         configForProgress = nextConfig;
         return {
@@ -237,25 +243,6 @@ function App() {
         };
       });
 
-      const progressAfterSave = calculateMesocycleProgress(
-        mesocycleName,
-        routinesWithDefaults,
-        updatedWorkouts,
-        configForProgress
-      );
-
-      if (
-        progressAfterSave.isMesocycleComplete &&
-        progressAfterSave.lastRoutineId === workout.routineId &&
-        progressAfterSave.weeksCompleted === configForProgress.durationWeeks
-      ) {
-        const message = `Mesociclo "${mesocycleName}" completado tras ${configForProgress.durationWeeks} semanas.`;
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Mesociclo completado', { body: message });
-        } else {
-          alert(message);
-        }
-      }
     }
 
     setCurrentScreen('routines');
@@ -267,6 +254,53 @@ function App() {
     setWorkouts(workouts.filter((workout) => workout.routineId !== routineId));
     setCurrentScreen('routines');
     setSelectedRoutine(null);
+  };
+
+  const handleCompleteWeek = (mesocycle: string) => {
+    const trimmed = mesocycle.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const progress = mesocycleProgress[trimmed];
+    if (!progress || !progress.isWeekComplete) {
+      alert('Aún faltan rutinas por registrar antes de cerrar la semana.');
+      return;
+    }
+
+    const existing = mesocycleConfigs[trimmed];
+    const baseConfig: MesocycleConfig = existing ?? {
+      durationWeeks: 4,
+      startDate: undefined,
+      completedCycleCount: 0,
+      weekOffset: 0,
+      completedWeeksInCycle: 0,
+    };
+
+    const nextCompletedWeeks = (baseConfig.completedWeeksInCycle ?? 0) + 1;
+    const duration = baseConfig.durationWeeks ?? 0;
+
+    setMesocycleConfigs((prev) => ({
+      ...prev,
+      [trimmed]: {
+        ...baseConfig,
+        startDate: undefined,
+        completedWeeksInCycle: nextCompletedWeeks,
+      },
+    }));
+
+    const isCycleFinished = duration > 0 && nextCompletedWeeks >= duration;
+    const message = isCycleFinished
+      ? `Mesociclo "${trimmed}" completado tras ${duration} semanas.`
+      : `Semana ${nextCompletedWeeks} de "${trimmed}" marcada como completada.`;
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(isCycleFinished ? 'Mesociclo completado' : 'Semana completada', {
+        body: message,
+      });
+    } else {
+      alert(message);
+    }
   };
 
   const getLastWorkoutForRoutine = (routineId: string): Workout | undefined => {
@@ -395,6 +429,7 @@ function App() {
             mesocycleProgress={mesocycleProgress[selectedRoutine.mesocycle]}
             sequence={mesocycleSequences[selectedRoutine.mesocycle] || []}
             onResetMesocycle={resetMesocycle}
+            onCompleteWeek={handleCompleteWeek}
           />
         )}
 

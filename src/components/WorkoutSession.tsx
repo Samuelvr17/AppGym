@@ -48,25 +48,32 @@ export function WorkoutSession({
     [sequence, routine.id]
   );
 
-  const pointer = mesocycleProgress?.currentSequenceIndex ?? 0;
-  const expectedRoutine = sequence[pointer];
-  const isExpectedRoutine = routineIndex >= 0 && pointer === routineIndex;
-  const hasSingleRoutine = sequence.length === 1;
-  const nextRoutineAfterCurrent =
-    routineIndex >= 0 && sequence.length > 0
-      ? sequence[(routineIndex + 1) % sequence.length]
-      : undefined;
+  const completedIds = mesocycleProgress?.completedRoutineIds ?? [];
+  const remainingIds = mesocycleProgress?.remainingRoutineIds ?? sequence.map((item) => item.id);
+  const hasCompletedThisWeek = completedIds.includes(routine.id);
+  const isOnlyRemaining =
+    !hasCompletedThisWeek &&
+    remainingIds.length === 1 &&
+    remainingIds[0] === routine.id;
+  const pendingAfterThis = sequence
+    .filter((item) =>
+      item.id !== routine.id && remainingIds.includes(item.id)
+    )
+    .map((item) => item.name);
+  const infoMessage = hasCompletedThisWeek
+    ? 'Esta rutina ya está registrada esta semana.'
+    : pendingAfterThis.length > 0
+    ? `Tras esta sesión seguirán pendientes: ${pendingAfterThis.join(', ')}.`
+    : 'Con esta sesión completarás todas las rutinas planificadas para la semana.';
 
-  const willCloseWeek =
-    sequence.length > 0 &&
-    isExpectedRoutine &&
-    (hasSingleRoutine || routineIndex === sequence.length - 1);
+  const willCloseWeek = isOnlyRemaining;
 
+  const potentialCompletedWeeks = (mesocycleProgress?.weeksCompleted ?? 0) + 1;
   const willCompleteCycle =
     willCloseWeek &&
     mesocycleConfig?.durationWeeks !== undefined &&
     mesocycleConfig.durationWeeks > 0 &&
-    (mesocycleProgress?.weeksCompleted ?? 0) + 1 >= mesocycleConfig.durationWeeks;
+    potentialCompletedWeeks >= mesocycleConfig.durationWeeks;
 
   useEffect(() => {
     // Initialize with routine exercises but with empty weight/reps
@@ -190,11 +197,7 @@ export function WorkoutSession({
         <div className="mt-3 space-y-2">
           <div className="flex items-center text-sm text-gray-600 bg-gray-100 rounded-lg px-3 py-2">
             <ArrowRight className="w-4 h-4 mr-2 text-blue-500" />
-            {isExpectedRoutine
-              ? hasSingleRoutine
-                ? 'Esta rutina marca el ritmo semanal del mesociclo.'
-                : `Tras completar esta sesión tocará: ${nextRoutineAfterCurrent?.name || expectedRoutine?.name || '—'}`
-              : `Según la secuencia toca: ${expectedRoutine?.name || '—'}`}
+            {infoMessage}
           </div>
           {willCloseWeek && (
             <div className={`flex items-center text-sm font-medium px-3 py-2 rounded-lg ${
@@ -205,8 +208,8 @@ export function WorkoutSession({
             >
               <CalendarCheck className="w-4 h-4 mr-2" />
               {willCompleteCycle
-                ? 'Esta sesión cerrará el mesociclo planificado.'
-                : 'Esta sesión completará la semana programada.'}
+                ? 'Tras guardarla podrás finalizar el mesociclo desde la pantalla de rutina.'
+                : 'Tras guardarla podrás cerrar la semana manualmente.'}
             </div>
           )}
         </div>
