@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Edit, Target, Zap, Trash2, RefreshCw } from 'lucide-react';
+import { Play, Edit, Target, Zap, Trash2, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { Routine, MesocycleConfig, MesocycleProgress } from '../types';
 
 interface RoutineDetailProps {
@@ -11,6 +11,7 @@ interface RoutineDetailProps {
   mesocycleProgress?: MesocycleProgress;
   sequence: Routine[];
   onResetMesocycle: (mesocycle: string, durationWeeks?: number) => void;
+  onCompleteWeek: (mesocycle: string) => void;
 }
 
 export function RoutineDetail({
@@ -22,6 +23,7 @@ export function RoutineDetail({
   mesocycleProgress,
   sequence,
   onResetMesocycle,
+  onCompleteWeek,
 }: RoutineDetailProps) {
   const blockDuration = mesocycleConfig?.durationWeeks;
   const displayTotalWeeks =
@@ -30,22 +32,30 @@ export function RoutineDetail({
   const currentWeek =
     mesocycleProgress?.currentWeekNumber ??
     (mesocycleConfig ? (mesocycleConfig.weekOffset ?? 0) + 1 : 0);
-  const isNextRoutine = mesocycleProgress?.nextRoutineId === routine.id;
   const completedCycles = mesocycleConfig?.completedCycleCount ?? 0;
-  const routineIndex = sequence.findIndex((item) => item.id === routine.id);
-  const nextRoutineIndex = routineIndex >= 0 && sequence.length > 0
-    ? (routineIndex + 1) % sequence.length
-    : -1;
-  const nextRoutineName =
-    isNextRoutine && nextRoutineIndex >= 0
-      ? sequence[nextRoutineIndex]?.name
-      : sequence.find((item) => item.id === mesocycleProgress?.nextRoutineId)?.name;
+  const completedThisWeek =
+    mesocycleProgress?.completedRoutineIds?.includes(routine.id) ?? false;
+  const pendingThisWeek =
+    mesocycleProgress?.remainingRoutineIds?.includes(routine.id) ?? false;
+  const remainingNames = sequence
+    .filter((item) =>
+      mesocycleProgress?.remainingRoutineIds?.includes(item.id) ?? false
+    )
+    .map((item) => item.name);
+  const completedNames = sequence
+    .filter((item) =>
+      mesocycleProgress?.completedRoutineIds?.includes(item.id) ?? false
+    )
+    .map((item) => item.name);
   const isCycleComplete =
     Boolean(
       blockDuration &&
         mesocycleProgress?.isMesocycleComplete &&
         mesocycleProgress.weeksCompleted >= blockDuration
     );
+  const canCompleteWeek = Boolean(
+    mesocycleProgress?.isWeekComplete && !mesocycleProgress.isMesocycleComplete
+  );
 
   const handleResetMesocycle = () => {
     const baseDuration = blockDuration ?? 4;
@@ -83,11 +93,6 @@ export function RoutineDetail({
               Sin duración definida
             </span>
           )}
-          {isNextRoutine && (
-            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-              Próxima en la secuencia
-            </span>
-          )}
           {isCycleComplete && (
             <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
               Mesociclo completado
@@ -98,10 +103,32 @@ export function RoutineDetail({
               Ciclos finalizados: {completedCycles}
             </span>
           )}
+          {completedThisWeek && (
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+              Registrada esta semana
+            </span>
+          )}
+          {pendingThisWeek && (
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+              Pendiente esta semana
+            </span>
+          )}
         </div>
-        {nextRoutineName && (
+        {remainingNames.length > 0 ? (
           <p className="text-sm text-gray-500 mt-2">
-            Próxima rutina planificada: <span className="font-medium text-gray-700">{nextRoutineName}</span>
+            Rutinas pendientes esta semana:{' '}
+            <span className="font-medium text-gray-700">
+              {remainingNames.join(', ')}
+            </span>
+          </p>
+        ) : (
+          <p className="text-sm text-gray-500 mt-2">
+            Todas las rutinas de esta semana han sido registradas.
+          </p>
+        )}
+        {completedNames.length > 0 && remainingNames.length > 0 && (
+          <p className="text-xs text-gray-400 mt-1">
+            Completadas: {completedNames.join(', ')}
           </p>
         )}
       </div>
@@ -160,15 +187,26 @@ export function RoutineDetail({
         </button>
       </div>
 
-      {blockDuration && (
-        <div className="mt-6">
-          <button
-            onClick={handleResetMesocycle}
-            className="w-full bg-indigo-50 text-indigo-700 py-3 px-6 rounded-xl font-semibold hover:bg-indigo-100 transition-colors flex items-center justify-center"
-          >
-            <RefreshCw className="w-5 h-5 mr-2" />
-            Iniciar siguiente mesociclo
-          </button>
+      {(canCompleteWeek || blockDuration) && (
+        <div className="mt-6 space-y-3">
+          {canCompleteWeek && (
+            <button
+              onClick={() => onCompleteWeek(routine.mesocycle)}
+              className="w-full bg-emerald-50 text-emerald-700 py-3 px-6 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center justify-center"
+            >
+              <CheckCircle2 className="w-5 h-5 mr-2" />
+              Terminar semana
+            </button>
+          )}
+          {blockDuration && (
+            <button
+              onClick={handleResetMesocycle}
+              className="w-full bg-indigo-50 text-indigo-700 py-3 px-6 rounded-xl font-semibold hover:bg-indigo-100 transition-colors flex items-center justify-center"
+            >
+              <RefreshCw className="w-5 h-5 mr-2" />
+              Iniciar siguiente mesociclo
+            </button>
+          )}
         </div>
       )}
     </div>

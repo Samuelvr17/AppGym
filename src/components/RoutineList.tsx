@@ -73,20 +73,27 @@ export function RoutineList({
           {routines.map((routine) => {
             const progress = mesocycleProgress[routine.mesocycle];
             const config = mesocycleConfigs[routine.mesocycle];
-            const isNextRoutine = progress?.nextRoutineId === routine.id;
             const displayTotalWeeks =
               progress?.displayTotalWeeks ??
               ((config?.durationWeeks ?? 0) + (config?.weekOffset ?? 0));
             const currentWeek =
               progress?.currentWeekNumber ??
               (config ? (config.weekOffset ?? 0) + 1 : 0);
+            const isPendingThisWeek = progress?.remainingRoutineIds?.includes(
+              routine.id
+            );
+            const isCompletedThisWeek = progress?.completedRoutineIds?.includes(
+              routine.id
+            );
 
             return (
               <button
                 key={routine.id}
                 onClick={() => onSelectRoutine(routine)}
                 className={`w-full bg-white border rounded-xl p-4 text-left shadow-sm hover:shadow-md transition-shadow ${
-                  isNextRoutine ? 'border-blue-400 shadow-blue-100' : 'border-gray-200'
+                  isPendingThisWeek
+                    ? 'border-blue-400 shadow-blue-100'
+                    : 'border-gray-200'
                 }`}
               >
                 <h3 className="font-semibold text-gray-900 text-lg">{routine.name}</h3>
@@ -104,9 +111,14 @@ export function RoutineList({
                         Sin duración definida
                       </span>
                     )}
-                    {isNextRoutine && (
+                    {isPendingThisWeek && (
                       <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                        Próxima en la secuencia
+                        Pendiente esta semana
+                      </span>
+                    )}
+                    {isCompletedThisWeek && (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+                        Registrada esta semana
                       </span>
                     )}
                     <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">

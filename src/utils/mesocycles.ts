@@ -18,18 +18,21 @@ export function calculateMesocycleProgress(
   const totalRoutines = sequence.length;
   const weekOffset = config?.weekOffset ?? 0;
   const plannedWeeks = config?.durationWeeks ?? 0;
+  const completedWeeksInCycle = config?.completedWeeksInCycle ?? 0;
   const displayTotalWeeks = plannedWeeks + weekOffset;
 
   const baseProgress: MesocycleProgress = {
-    weeksCompleted: 0,
-    currentWeekNumber: weekOffset + (totalRoutines > 0 ? 1 : 0),
+    weeksCompleted: completedWeeksInCycle,
+    currentWeekNumber:
+      weekOffset + completedWeeksInCycle + (totalRoutines > 0 ? 1 : 0),
     displayTotalWeeks,
-    currentSequenceIndex: 0,
     totalRoutines,
+    completedRoutineIds: [],
+    remainingRoutineIds: sequence.map((routine) => routine.id),
     lastRoutineId: undefined,
-    nextRoutineId: sequence[0]?.id,
     isWeekComplete: false,
-    isMesocycleComplete: false,
+    isMesocycleComplete:
+      plannedWeeks > 0 && completedWeeksInCycle >= plannedWeeks,
   };
 
   if (totalRoutines === 0) {
@@ -45,13 +48,10 @@ export function calculateMesocycleProgress(
     return baseProgress;
   }
 
-  const indexByRoutineId = new Map<string, number>();
-  sequence.forEach((routine, index) => {
-    indexByRoutineId.set(routine.id, index);
-  });
+  const routineIds = new Set(sequence.map((routine) => routine.id));
 
   const relevantWorkouts = workouts
-    .filter((workout) => indexByRoutineId.has(workout.routineId))
+    .filter((workout) => routineIds.has(workout.routineId))
     .filter((workout) => new Date(workout.date).getTime() >= startTime)
     .sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -61,61 +61,32 @@ export function calculateMesocycleProgress(
     return baseProgress;
   }
 
-  let weeksCompleted = 0;
-  let pointer = 0;
-  let isWeekComplete = false;
+  const completedSet = new Set<string>();
+  const sortedSequenceIds = sequence.map((routine) => routine.id);
   let lastRoutineId: string | undefined;
-  let lastRoutineIndex: number | undefined;
 
   for (const workout of relevantWorkouts) {
-    const routineIndex = indexByRoutineId.get(workout.routineId);
-    if (routineIndex === undefined) {
-      continue;
-    }
-
-    if (routineIndex === pointer) {
-      pointer += 1;
-      lastRoutineId = workout.routineId;
-      if (pointer === totalRoutines) {
-        weeksCompleted += 1;
-        pointer = 0;
-        isWeekComplete = true;
-      } else {
-        isWeekComplete = false;
-      }
-    } else {
-      const wasLastRoutine = lastRoutineIndex !== undefined && routineIndex === lastRoutineIndex;
-      if (wasLastRoutine) {
-        // Repetir la misma rutina no avanza la secuencia
-        lastRoutineId = workout.routineId;
-        isWeekComplete = false;
-      } else {
-        pointer = (routineIndex + 1) % totalRoutines;
-        lastRoutineId = workout.routineId;
-        isWeekComplete = false;
-      }
-    }
-
-    lastRoutineIndex = routineIndex;
+    completedSet.add(workout.routineId);
+    lastRoutineId = workout.routineId;
   }
 
-  const baseWeek = isWeekComplete ? weeksCompleted : weeksCompleted + 1;
-  const safeWeek = Math.max(baseWeek, 1);
-  const currentWeekNumber = weekOffset + safeWeek;
+  const completedRoutineIds = sortedSequenceIds.filter((id) =>
+    completedSet.has(id)
+  );
+  const remainingRoutineIds = sortedSequenceIds.filter(
+    (id) => !completedSet.has(id)
+  );
 
-  const nextRoutineId = sequence[pointer]?.id ?? sequence[0]?.id;
-
+  const isWeekComplete = remainingRoutineIds.length === 0 && totalRoutines > 0;
   const isMesocycleComplete =
-    plannedWeeks > 0 && weeksCompleted >= plannedWeeks && isWeekComplete;
+    baseProgress.isMesocycleComplete ||
+    (plannedWeeks > 0 && isWeekComplete && completedWeeksInCycle + 1 >= plannedWeeks);
 
   return {
-    weeksCompleted,
-    currentWeekNumber,
-    displayTotalWeeks,
-    currentSequenceIndex: pointer,
-    totalRoutines,
+    ...baseProgress,
+    completedRoutineIds,
+    remainingRoutineIds,
     lastRoutineId,
-    nextRoutineId,
     isWeekComplete,
     isMesocycleComplete,
   };
