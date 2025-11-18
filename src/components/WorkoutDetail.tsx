@@ -63,15 +63,15 @@ export function WorkoutDetail({ workout }: WorkoutDetailProps) {
               )}
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm text-gray-600 mb-2 font-medium">
-                  <span className="w-8">Serie</span>
+                <div className="flex items-center justify-center gap-8 text-sm text-gray-600 mb-2 font-medium">
+                  <span className="w-12 text-center">Serie</span>
                   <span className="w-20 text-center">Peso</span>
                   <span className="w-20 text-center">Reps</span>
                 </div>
 
                 {exercise.sets.map((set, setIndex) => (
-                  <div key={setIndex} className="flex items-center text-sm">
-                    <span className="w-8 text-gray-600">{setIndex + 1}</span>
+                  <div key={setIndex} className="flex items-center justify-center gap-8 text-sm">
+                    <span className="w-12 text-center text-gray-600">{setIndex + 1}</span>
                     <span className="w-20 text-center font-medium">{set.weight} kg</span>
                     <span className="w-20 text-center font-medium">{set.reps}</span>
                   </div>
