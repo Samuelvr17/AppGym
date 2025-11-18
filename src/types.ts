@@ -15,7 +15,7 @@ export interface Exercise {
 export interface Routine {
   id: string;
   name: string;
-  mesocycle: string;
+  mesocycle?: string;
   exercises: Exercise[];
   createdAt: string;
 }
@@ -34,26 +34,6 @@ export interface Workout {
     repRange?: string;
     notes?: string; // Notas del ejercicio durante el entrenamiento
   }[];
-}
-
-export interface MesocycleConfig {
-  durationWeeks: number;
-  startDate?: string;
-  completedCycleCount: number;
-  weekOffset: number;
-  completedWeeksInCycle: number;
-}
-
-export interface MesocycleProgress {
-  weeksCompleted: number;
-  currentWeekNumber: number;
-  displayTotalWeeks: number;
-  totalRoutines: number;
-  completedRoutineIds: string[];
-  remainingRoutineIds: string[];
-  lastRoutineId?: string;
-  isWeekComplete: boolean;
-  isMesocycleComplete: boolean;
 }
 
 export type Screen =

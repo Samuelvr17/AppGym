@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Check,
   Target,
@@ -8,15 +8,11 @@ import {
   MessageSquare,
   Clock,
   History,
-  ArrowRight,
-  CalendarCheck,
 } from 'lucide-react';
 import {
   Routine,
   Workout,
   Exercise,
-  MesocycleConfig,
-  MesocycleProgress,
 } from '../types';
 import { generateId } from '../utils/storage';
 
@@ -25,9 +21,6 @@ interface WorkoutSessionProps {
   previousWorkout?: Workout;
   onSaveWorkout: (workout: Workout) => void;
   onCancel: () => void;
-  mesocycleConfig?: MesocycleConfig;
-  mesocycleProgress?: MesocycleProgress;
-  sequence: Routine[];
 }
 
 export function WorkoutSession({
@@ -35,45 +28,10 @@ export function WorkoutSession({
   previousWorkout,
   onSaveWorkout,
   onCancel,
-  mesocycleConfig,
-  mesocycleProgress,
-  sequence,
 }: WorkoutSessionProps) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [workoutStartTime] = useState<number>(Date.now());
   const [workoutDuration, setWorkoutDuration] = useState<number>(0);
-
-  const routineIndex = useMemo(
-    () => sequence.findIndex((item) => item.id === routine.id),
-    [sequence, routine.id]
-  );
-
-  const completedIds = mesocycleProgress?.completedRoutineIds ?? [];
-  const remainingIds = mesocycleProgress?.remainingRoutineIds ?? sequence.map((item) => item.id);
-  const hasCompletedThisWeek = completedIds.includes(routine.id);
-  const isOnlyRemaining =
-    !hasCompletedThisWeek &&
-    remainingIds.length === 1 &&
-    remainingIds[0] === routine.id;
-  const pendingAfterThis = sequence
-    .filter((item) =>
-      item.id !== routine.id && remainingIds.includes(item.id)
-    )
-    .map((item) => item.name);
-  const infoMessage = hasCompletedThisWeek
-    ? 'Esta rutina ya está registrada esta semana.'
-    : pendingAfterThis.length > 0
-    ? `Tras esta sesión seguirán pendientes: ${pendingAfterThis.join(', ')}.`
-    : 'Con esta sesión completarás todas las rutinas planificadas para la semana.';
-
-  const willCloseWeek = isOnlyRemaining;
-
-  const potentialCompletedWeeks = (mesocycleProgress?.weeksCompleted ?? 0) + 1;
-  const willCompleteCycle =
-    willCloseWeek &&
-    mesocycleConfig?.durationWeeks !== undefined &&
-    mesocycleConfig.durationWeeks > 0 &&
-    potentialCompletedWeeks >= mesocycleConfig.durationWeeks;
 
   useEffect(() => {
     // Initialize with routine exercises but with empty weight/reps
@@ -142,22 +100,12 @@ export function WorkoutSession({
   };
 
   const updateNotes = (exerciseId: string, notes: string) => {
-    setExercises(exercises.map(ex => 
+    setExercises(exercises.map(ex =>
       ex.id === exerciseId ? { ...ex, notes } : ex
     ));
   };
 
   const handleSaveWorkout = () => {
-    if (willCloseWeek) {
-      const message = willCompleteCycle
-        ? `Esta sesión cerrará la semana y el mesociclo de ${routine.mesocycle}. ¿Guardar entrenamiento?`
-        : `Esta sesión completará la semana actual del mesociclo de ${routine.mesocycle}. ¿Guardar entrenamiento?`;
-      const proceed = window.confirm(message);
-      if (!proceed) {
-        return;
-      }
-    }
-
     const workout: Workout = {
       id: generateId(),
       routineId: routine.id,
@@ -191,28 +139,8 @@ export function WorkoutSession({
       </div>
 
       <div className="mb-6">
-        <p className="text-sm uppercase tracking-wide text-blue-600 font-semibold mb-1">{routine.mesocycle}</p>
         <h2 className="text-2xl font-bold text-gray-900 mb-1">{routine.name}</h2>
         <p className="text-gray-600">Registra tu entrenamiento</p>
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center text-sm text-gray-600 bg-gray-100 rounded-lg px-3 py-2">
-            <ArrowRight className="w-4 h-4 mr-2 text-blue-500" />
-            {infoMessage}
-          </div>
-          {willCloseWeek && (
-            <div className={`flex items-center text-sm font-medium px-3 py-2 rounded-lg ${
-              willCompleteCycle
-                ? 'bg-purple-100 text-purple-700'
-                : 'bg-emerald-100 text-emerald-700'
-            }`}
-            >
-              <CalendarCheck className="w-4 h-4 mr-2" />
-              {willCompleteCycle
-                ? 'Tras guardarla podrás finalizar el mesociclo desde la pantalla de rutina.'
-                : 'Tras guardarla podrás cerrar la semana manualmente.'}
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="space-y-6 mb-8">
