@@ -19,16 +19,16 @@ export function WorkoutDetail({ workout }: WorkoutDetailProps) {
   };
 
   return (
-    <div className="p-4 pb-20">
-      <div className="mb-6">
+    <div className="p-4 pb-20 max-w-xl mx-auto">
+      <div className="mb-6 text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{workout.routineName}</h2>
-        <div className="space-y-2">
-          <div className="flex items-center text-gray-600">
+        <div className="space-y-2 text-center">
+          <div className="flex items-center justify-center text-gray-600">
             <Calendar className="w-4 h-4 mr-2" />
             {formatDate(workout.date)}
           </div>
           {workout.duration && (
-            <div className="flex items-center text-gray-600">
+            <div className="flex items-center justify-center text-gray-600">
               <Clock className="w-4 h-4 mr-2" />
               Duración: {formatDuration(workout.duration)}
             </div>
@@ -38,7 +38,10 @@ export function WorkoutDetail({ workout }: WorkoutDetailProps) {
 
       <div className="space-y-4">
         {workout.exercises.map((exercise) => (
-          <div key={exercise.id} className="bg-white border border-gray-200 rounded-xl p-4">
+          <div
+            key={exercise.id}
+            className="bg-white border border-gray-200 rounded-xl p-4 mx-auto text-left"
+          >
             <h3 className="font-semibold text-gray-900 mb-2">{exercise.name}</h3>
             
             {(exercise.technique || exercise.repRange) && (
