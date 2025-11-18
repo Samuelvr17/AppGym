@@ -344,18 +344,18 @@ export function WorkoutSession({
                       <span className="text-sm text-gray-500">reps</span>
                     </div>
 
-                    <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:ml-auto">
                       <button
                         type="button"
                         onClick={() => startRestTimer(exercise.id, setIndex)}
-                        className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-lg hover:bg-green-100"
+                        className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-lg hover:bg-green-100 w-full sm:w-auto"
                       >
                         {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex
                           ? 'Reiniciar'
                           : 'Desc.'}
                       </button>
                       {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex && (
-                        <span className="text-sm font-semibold text-green-600">
+                        <span className="text-center text-sm font-semibold text-green-600">
                           {formatTime(restRemaining)}
                         </span>
                       )}
@@ -364,7 +364,7 @@ export function WorkoutSession({
                     {exercise.sets.length > 1 && (
                       <button
                         onClick={() => removeSet(exercise.id, setIndex)}
-                        className="text-red-500 hover:text-red-700 p-1"
+                        className="self-end text-red-500 hover:text-red-700 p-1 sm:self-auto"
                       >
                         <X className="w-4 h-4" />
                       </button>
