@@ -41,6 +41,7 @@ export function WorkoutSession({
   const [isResting, setIsResting] = useState<boolean>(false);
   const [activeRest, setActiveRest] = useState<{ exerciseId: string; setIndex: number | null } | null>(null);
   const [wakeLockWarning, setWakeLockWarning] = useState<string>('');
+  const [notificationWarning, setNotificationWarning] = useState<string>('');
   const audioContextRef = useRef<AudioContext | null>(null);
   const restIntervalRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -131,8 +132,35 @@ export function WorkoutSession({
 
   // Request notification permission on component mount
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    if (typeof window === 'undefined') return;
+
+    if (!('Notification' in window) || typeof Notification.requestPermission !== 'function') {
+      setNotificationWarning('Tu navegador no soporta notificaciones de descanso.');
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      setNotificationWarning('Las notificaciones requieren una conexión segura (HTTPS).');
+      return;
+    }
+
+    if (Notification.permission === 'default') {
+      Notification.requestPermission()
+        .then(permission => {
+          if (permission !== 'granted') {
+            setNotificationWarning('Activa las notificaciones del navegador para recibir avisos de descanso.');
+          } else {
+            setNotificationWarning('');
+          }
+        })
+        .catch(error => {
+          console.warn('No se pudo solicitar permiso para notificaciones', error);
+          setNotificationWarning('No se pudo solicitar permiso para notificaciones.');
+        });
+    } else if (Notification.permission !== 'granted') {
+      setNotificationWarning('Activa las notificaciones del navegador para recibir avisos de descanso.');
+    } else {
+      setNotificationWarning('');
     }
   }, []);
 
@@ -172,11 +200,25 @@ export function WorkoutSession({
   };
 
   const triggerRestNotification = () => {
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification('Descanso completado', {
-        body: 'Vuelve al siguiente ejercicio',
-        silent: true,
-      });
+    const canNotify =
+      typeof window !== 'undefined' &&
+      'Notification' in window &&
+      typeof Notification.requestPermission === 'function' &&
+      window.isSecureContext &&
+      Notification.permission === 'granted';
+
+    if (canNotify) {
+      try {
+        new Notification('Descanso completado', {
+          body: 'Vuelve al siguiente ejercicio',
+          silent: true,
+        });
+      } catch (error) {
+        console.warn('No se pudo mostrar la notificación de descanso', error);
+        setNotificationWarning('No se pudo mostrar la notificación de descanso en tu navegador.');
+      }
+    } else {
+      console.warn('Las notificaciones no están disponibles o el permiso fue denegado.');
     }
 
     try {
@@ -340,6 +382,11 @@ export function WorkoutSession({
         {wakeLockWarning && (
           <p className="text-xs text-amber-600 mt-2">
             {wakeLockWarning}
+          </p>
+        )}
+        {notificationWarning && (
+          <p className="text-xs text-amber-600 mt-2">
+            {notificationWarning}
           </p>
         )}
       </div>
