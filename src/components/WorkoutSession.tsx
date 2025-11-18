@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Check,
   Target,
@@ -40,8 +40,69 @@ export function WorkoutSession({
   const [restRemaining, setRestRemaining] = useState<number>(0);
   const [isResting, setIsResting] = useState<boolean>(false);
   const [activeRest, setActiveRest] = useState<{ exerciseId: string; setIndex: number | null } | null>(null);
+  const [wakeLockWarning, setWakeLockWarning] = useState<string>('');
   const audioContextRef = useRef<AudioContext | null>(null);
   const restIntervalRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const ensureAudioContextReady = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContextClass();
+      }
+
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+    } catch (error) {
+      console.warn('No se pudo inicializar el AudioContext', error);
+    }
+  }, []);
+
+  const requestWakeLock = useCallback(async () => {
+    if (typeof navigator === 'undefined') return;
+
+    const nav = navigator as Navigator & {
+      wakeLock?: {
+        request?: (type: 'screen') => Promise<WakeLockSentinel>;
+      };
+    };
+
+    if (!nav.wakeLock?.request) {
+      setWakeLockWarning('Tu navegador no soporta mantener la pantalla activa durante el descanso.');
+      return;
+    }
+
+    try {
+      const sentinel = await nav.wakeLock.request('screen');
+      if (sentinel) {
+        wakeLockRef.current = sentinel;
+        setWakeLockWarning('');
+        sentinel.addEventListener('release', () => {
+          wakeLockRef.current = null;
+        });
+      }
+    } catch (error) {
+      console.warn('No se pudo activar el wake lock', error);
+      setWakeLockWarning('No se pudo mantener la pantalla activa. Tu dispositivo podría bloquearse durante el descanso.');
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(async () => {
+    try {
+      if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+      }
+    } catch (error) {
+      console.warn('No se pudo liberar el wake lock', error);
+    } finally {
+      wakeLockRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     // Initialize with routine exercises but with empty weight/reps
@@ -80,8 +141,24 @@ export function WorkoutSession({
       if (restIntervalRef.current) {
         clearInterval(restIntervalRef.current);
       }
+      releaseWakeLock();
     };
-  }, []);
+  }, [releaseWakeLock]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isResting) {
+        requestWakeLock();
+      } else if (document.visibilityState === 'hidden') {
+        releaseWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isResting, releaseWakeLock, requestWakeLock]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -127,6 +204,7 @@ export function WorkoutSession({
     triggerRestNotification();
     setIsResting(false);
     setActiveRest(null);
+    releaseWakeLock();
   };
 
   const startInterval = () => {
@@ -149,6 +227,8 @@ export function WorkoutSession({
   };
 
   const startRestTimer = (exerciseId: string, setIndex: number | null = null) => {
+    ensureAudioContextReady();
+    requestWakeLock();
     setActiveRest({ exerciseId, setIndex });
     setRestRemaining(restDuration);
     setIsResting(true);
@@ -163,6 +243,7 @@ export function WorkoutSession({
     setIsResting(false);
     setRestRemaining(0);
     setActiveRest(null);
+    releaseWakeLock();
   };
 
   const updateSet = (exerciseId: string, setIndex: number, field: 'weight' | 'reps', value: number) => {
@@ -256,6 +337,11 @@ export function WorkoutSession({
         <p className="text-xs text-gray-500 mt-2">
           Este valor se guardará como preferencia para tus próximos descansos.
         </p>
+        {wakeLockWarning && (
+          <p className="text-xs text-amber-600 mt-2">
+            {wakeLockWarning}
+          </p>
+        )}
       </div>
 
       <div className="mb-6">
