@@ -319,43 +319,60 @@ export function WorkoutSession({
 
               <div className="space-y-3 mb-4">
                 {exercise.sets.map((set, setIndex) => (
-                  <div key={setIndex} className="flex flex-wrap items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-600 w-8">
+                  <div
+                    key={setIndex}
+                    className="rounded-xl border border-gray-100 bg-gray-50/60 p-3 sm:flex sm:items-center sm:gap-4 sm:border-0 sm:bg-transparent sm:p-0"
+                  >
+                    <span className="text-sm font-semibold text-gray-600 w-10 text-center sm:text-left">
                       {setIndex + 1}
                     </span>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="number"
-                        value={set.weight || ''}
-                        onChange={(e) => updateSet(exercise.id, setIndex, 'weight', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="0"
-                      />
-                      <span className="text-sm text-gray-500">kg</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="number"
-                        value={set.reps || ''}
-                        onChange={(e) => updateSet(exercise.id, setIndex, 'reps', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="0"
-                      />
-                      <span className="text-sm text-gray-500">reps</span>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 sm:flex-1">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                        <label className="text-xs font-medium uppercase tracking-wide text-gray-500 sm:hidden">
+                          Peso
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={set.weight || ''}
+                            onChange={(e) => updateSet(exercise.id, setIndex, 'weight', Number(e.target.value))}
+                            className="w-full sm:w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="0"
+                          />
+                          <span className="text-sm text-gray-500">kg</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                        <label className="text-xs font-medium uppercase tracking-wide text-gray-500 sm:hidden">
+                          Reps
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={set.reps || ''}
+                            onChange={(e) => updateSet(exercise.id, setIndex, 'reps', Number(e.target.value))}
+                            className="w-full sm:w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="0"
+                          />
+                          <span className="text-sm text-gray-500">reps</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:ml-auto">
                       <button
                         type="button"
                         onClick={() => startRestTimer(exercise.id, setIndex)}
-                        className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-lg hover:bg-green-100"
+                        className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-lg hover:bg-green-100 w-full sm:w-auto"
                       >
                         {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex
                           ? 'Reiniciar'
                           : 'Descanso'}
                       </button>
                       {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex && (
-                        <span className="text-sm font-semibold text-green-600">
+                        <span className="text-center text-sm font-semibold text-green-600">
                           {formatTime(restRemaining)}
                         </span>
                       )}
@@ -364,7 +381,7 @@ export function WorkoutSession({
                     {exercise.sets.length > 1 && (
                       <button
                         onClick={() => removeSet(exercise.id, setIndex)}
-                        className="text-red-500 hover:text-red-700 p-1"
+                        className="self-end text-red-500 hover:text-red-700 p-1 sm:self-auto"
                       >
                         <X className="w-4 h-4" />
                       </button>
