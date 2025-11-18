@@ -319,8 +319,8 @@ export function WorkoutSession({
 
               <div className="space-y-3 mb-4">
                 {exercise.sets.map((set, setIndex) => (
-                  <div key={setIndex} className="flex flex-wrap items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-600 w-8">
+                  <div key={setIndex} className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <span className="text-sm font-medium text-gray-600 w-7 text-center sm:text-left sm:w-8">
                       {setIndex + 1}
                     </span>
                     <div className="flex items-center space-x-2">
@@ -328,7 +328,7 @@ export function WorkoutSession({
                         type="number"
                         value={set.weight || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'weight', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-16 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="0"
                       />
                       <span className="text-sm text-gray-500">kg</span>
@@ -338,7 +338,7 @@ export function WorkoutSession({
                         type="number"
                         value={set.reps || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'reps', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-16 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="0"
                       />
                       <span className="text-sm text-gray-500">reps</span>
@@ -352,7 +352,7 @@ export function WorkoutSession({
                       >
                         {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex
                           ? 'Reiniciar'
-                          : 'Descanso'}
+                          : 'Desc.'}
                       </button>
                       {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex && (
                         <span className="text-sm font-semibold text-green-600">
