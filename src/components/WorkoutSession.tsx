@@ -39,6 +39,11 @@ export function WorkoutSession({
   });
   const [restRemaining, setRestRemaining] = useState<number>(0);
   const [isResting, setIsResting] = useState<boolean>(false);
+  const [isVibrationEnabled, setIsVibrationEnabled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem('restVibrationEnabled');
+    return saved ? saved === 'true' : true;
+  });
   const [activeRest, setActiveRest] = useState<{ exerciseId: string; setIndex: number | null } | null>(null);
   const [wakeLockWarning, setWakeLockWarning] = useState<string>('');
   const [notificationWarning, setNotificationWarning] = useState<string>('');
@@ -129,6 +134,12 @@ export function WorkoutSession({
       localStorage.setItem('restDuration', String(restDuration));
     }
   }, [restDuration]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('restVibrationEnabled', String(isVibrationEnabled));
+    }
+  }, [isVibrationEnabled]);
 
   // Request notification permission on component mount
   useEffect(() => {
@@ -239,6 +250,15 @@ export function WorkoutSession({
       }
     } catch (error) {
       console.error('No se pudo reproducir el sonido de descanso', error);
+    }
+
+    if (isVibrationEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      const nav = navigator as Navigator & { vibrate?: (pattern: number | number[]) => boolean };
+      try {
+        nav.vibrate?.([200, 100, 200]);
+      } catch (error) {
+        console.warn('No se pudo activar la vibración de descanso', error);
+      }
     }
   };
 
@@ -379,6 +399,29 @@ export function WorkoutSession({
         <p className="text-xs text-gray-500 mt-2">
           Este valor se guardará como preferencia para tus próximos descansos.
         </p>
+        <div className="flex flex-col gap-1 mt-4">
+          <label className="flex items-center justify-between text-sm text-gray-700">
+            <span>Vibración al finalizar el descanso</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isVibrationEnabled}
+              onClick={() => setIsVibrationEnabled(prev => !prev)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isVibrationEnabled ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isVibrationEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </label>
+          <p className="text-xs text-gray-500">
+            La vibración solo funciona en dispositivos compatibles.
+          </p>
+        </div>
         {wakeLockWarning && (
           <p className="text-xs text-amber-600 mt-2">
             {wakeLockWarning}
