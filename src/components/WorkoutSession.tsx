@@ -49,6 +49,8 @@ export function WorkoutSession({
   const [notificationWarning, setNotificationWarning] = useState<string>('');
   const audioContextRef = useRef<AudioContext | null>(null);
   const restIntervalRef = useRef<number | null>(null);
+  const restStartTimeRef = useRef<number | null>(null);
+  const restDurationRef = useRef<number>(restDuration);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const ensureAudioContextReady = useCallback(() => {
@@ -186,8 +188,11 @@ export function WorkoutSession({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isResting) {
-        requestWakeLock();
+      if (document.visibilityState === 'visible') {
+        if (isResting) {
+          updateRestRemaining();
+          requestWakeLock();
+        }
       } else if (document.visibilityState === 'hidden') {
         releaseWakeLock();
       }
@@ -197,7 +202,7 @@ export function WorkoutSession({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isResting, releaseWakeLock, requestWakeLock]);
+  }, [isResting, releaseWakeLock, requestWakeLock, updateRestRemaining]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -262,39 +267,45 @@ export function WorkoutSession({
     }
   };
 
-  const handleRestComplete = () => {
+  const handleRestComplete = useCallback(() => {
     triggerRestNotification();
     setIsResting(false);
     setActiveRest(null);
     releaseWakeLock();
-  };
+  }, [releaseWakeLock]);
+
+  const updateRestRemaining = useCallback(() => {
+    if (!restStartTimeRef.current) return;
+    const elapsed = Math.floor((Date.now() - restStartTimeRef.current) / 1000);
+    const remaining = Math.max(restDurationRef.current - elapsed, 0);
+    setRestRemaining(remaining);
+
+    if (remaining === 0) {
+      if (restIntervalRef.current) {
+        clearInterval(restIntervalRef.current);
+        restIntervalRef.current = null;
+      }
+      handleRestComplete();
+    }
+  }, [handleRestComplete]);
 
   const startInterval = () => {
     if (restIntervalRef.current) {
       clearInterval(restIntervalRef.current);
     }
-    restIntervalRef.current = window.setInterval(() => {
-      setRestRemaining(prev => {
-        if (prev <= 1) {
-          if (restIntervalRef.current) {
-            clearInterval(restIntervalRef.current);
-            restIntervalRef.current = null;
-          }
-          handleRestComplete();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    restIntervalRef.current = window.setInterval(updateRestRemaining, 1000);
   };
 
   const startRestTimer = (exerciseId: string, setIndex: number | null = null) => {
     ensureAudioContextReady();
     requestWakeLock();
     setActiveRest({ exerciseId, setIndex });
+    restDurationRef.current = restDuration;
+    restStartTimeRef.current = Date.now();
     setRestRemaining(restDuration);
     setIsResting(true);
     startInterval();
+    updateRestRemaining();
   };
 
   const cancelRestTimer = () => {
@@ -305,6 +316,7 @@ export function WorkoutSession({
     setIsResting(false);
     setRestRemaining(0);
     setActiveRest(null);
+    restStartTimeRef.current = null;
     releaseWakeLock();
   };
 
