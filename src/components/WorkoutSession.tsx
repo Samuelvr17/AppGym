@@ -186,24 +186,6 @@ export function WorkoutSession({
     };
   }, [releaseWakeLock]);
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        if (isResting) {
-          updateRestRemaining();
-          requestWakeLock();
-        }
-      } else if (document.visibilityState === 'hidden') {
-        releaseWakeLock();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isResting, releaseWakeLock, requestWakeLock, updateRestRemaining]);
-
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -288,6 +270,24 @@ export function WorkoutSession({
       handleRestComplete();
     }
   }, [handleRestComplete]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        if (isResting) {
+          updateRestRemaining();
+          requestWakeLock();
+        }
+      } else if (document.visibilityState === 'hidden') {
+        releaseWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isResting, releaseWakeLock, requestWakeLock, updateRestRemaining]);
 
   const startInterval = () => {
     if (restIntervalRef.current) {
