@@ -1,5 +1,5 @@
+import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
   title: string;
@@ -18,8 +18,7 @@ export function Header({ title, onBack }: HeaderProps) {
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
-        <h1 className="text-xl font-bold flex-1">{title}</h1>
-        <ThemeToggle />
+        <h1 className="text-xl font-bold">{title}</h1>
       </div>
     </div>
   );
