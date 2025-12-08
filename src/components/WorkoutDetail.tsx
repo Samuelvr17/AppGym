@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Calendar, Target, Zap, MessageSquare, Clock } from 'lucide-react';
 import { Workout } from '../types';
 import { formatDate } from '../utils/storage';

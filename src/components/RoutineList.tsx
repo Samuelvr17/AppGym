@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Plus, Dumbbell } from 'lucide-react';
 import { Routine } from '../types';
 

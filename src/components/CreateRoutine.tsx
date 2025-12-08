@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
 import { Routine, Exercise } from '../types';
 import { generateId } from '../utils/storage';
@@ -145,7 +145,7 @@ export function CreateRoutine({
         </div>
 
         <div className="space-y-6">
-          {exercises.map((exercise, exerciseIndex) => (
+          {exercises.map((exercise) => (
             <div key={exercise.id} className="bg-gray-50 rounded-xl p-4">
               <div className="flex items-center justify-between mb-4">
                 <input
