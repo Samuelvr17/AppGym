@@ -27,9 +27,9 @@ export function RoutineList({
 
       {routines.length === 0 ? (
         <div className="text-center py-12">
-          <Dumbbell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No hay rutinas creadas</p>
-          <p className="text-gray-400 text-sm mt-2">Añade tu primera rutina para comenzar</p>
+          <Dumbbell className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 text-lg">No hay rutinas creadas</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">Añade tu primera rutina para comenzar</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -38,11 +38,11 @@ export function RoutineList({
               <button
                 key={routine.id}
                 onClick={() => onSelectRoutine(routine)}
-                className="w-full bg-white border rounded-xl p-4 text-left shadow-sm hover:shadow-md transition-shadow"
+                className="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl p-4 text-left shadow-sm hover:shadow-md transition-shadow"
               >
-                <h3 className="font-semibold text-gray-900 text-lg">{routine.name}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{routine.name}</h3>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-3 mt-1">
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
                     {routine.exercises.length} ejercicios
                   </p>
                 </div>

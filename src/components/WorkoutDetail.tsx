@@ -28,14 +28,14 @@ export function WorkoutDetail({ workout, onDeleteWorkout }: WorkoutDetailProps) 
   return (
     <div className="p-4 pb-20 max-w-xl mx-auto">
       <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{workout.routineName}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{workout.routineName}</h2>
         <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center text-gray-600">
+          <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
             <Calendar className="w-4 h-4 mr-2" />
             {formatDate(workout.date)}
           </div>
           {workout.duration && (
-            <div className="flex items-center justify-center text-gray-600">
+            <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
               <Clock className="w-4 h-4 mr-2" />
               Duración: {formatDuration(workout.duration)}
             </div>
@@ -47,10 +47,10 @@ export function WorkoutDetail({ workout, onDeleteWorkout }: WorkoutDetailProps) 
         {workout.exercises.map((exercise) => (
           <div
             key={exercise.id}
-            className="bg-white border border-gray-200 rounded-xl p-4 mx-auto text-center"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mx-auto text-center"
           >
             <div className="max-w-md mx-auto text-left">
-              <h3 className="font-semibold text-gray-900 mb-2">{exercise.name}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{exercise.name}</h3>
 
               {(exercise.technique || exercise.repRange) && (
                 <div className="flex flex-wrap gap-2 text-xs mb-4 justify-center">
@@ -70,7 +70,7 @@ export function WorkoutDetail({ workout, onDeleteWorkout }: WorkoutDetailProps) 
               )}
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-center gap-8 text-sm text-gray-600 mb-2 font-medium">
+                <div className="flex items-center justify-center gap-8 text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">
                   <span className="w-12 text-center">Serie</span>
                   <span className="w-20 text-center">Peso</span>
                   <span className="w-20 text-center">Reps</span>
@@ -78,7 +78,7 @@ export function WorkoutDetail({ workout, onDeleteWorkout }: WorkoutDetailProps) 
 
                 {exercise.sets.map((set, setIndex) => (
                   <div key={setIndex} className="flex items-center justify-center gap-8 text-sm">
-                    <span className="w-12 text-center text-gray-600">{setIndex + 1}</span>
+                    <span className="w-12 text-center text-gray-600 dark:text-gray-400">{setIndex + 1}</span>
                     <span className="w-20 text-center font-medium">{set.weight} kg</span>
                     <span className="w-20 text-center font-medium">{set.reps}</span>
                   </div>
@@ -87,12 +87,12 @@ export function WorkoutDetail({ workout, onDeleteWorkout }: WorkoutDetailProps) 
 
               {/* Mostrar notas si existen */}
               {exercise.notes && exercise.notes.trim() && (
-                <div className="border-t border-gray-100 pt-3">
-                  <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+                  <div className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <MessageSquare className="w-4 h-4 mr-1" />
                     Notas
                   </div>
-                  <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                     {exercise.notes}
                   </p>
                 </div>

@@ -18,16 +18,16 @@ export function RoutineDetail({
   return (
     <div className="p-4 pb-24">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">{routine.name}</h2>
-        <p className="text-gray-600">{routine.exercises.length} ejercicios</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{routine.name}</h2>
+        <p className="text-gray-600 dark:text-gray-400">{routine.exercises.length} ejercicios</p>
       </div>
 
       <div className="space-y-4 mb-8">
         {routine.exercises.map((exercise) => (
-          <div key={exercise.id} className="bg-white border border-gray-200 rounded-xl p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">{exercise.name}</h3>
-            <p className="text-gray-600 text-sm mb-3">{exercise.sets.length} series</p>
-            
+          <div key={exercise.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{exercise.name}</h3>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{exercise.sets.length} series</p>
+
             {(exercise.technique || exercise.repRange) && (
               <div className="flex flex-wrap gap-2 text-xs">
                 {exercise.repRange && (
@@ -55,14 +55,14 @@ export function RoutineDetail({
               onDeleteRoutine(routine.id);
             }
           }}
-          className="w-full bg-red-50 text-red-600 py-4 px-6 rounded-xl font-semibold hover:bg-red-100 transition-colors flex items-center justify-center"
+          className="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-4 px-6 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center"
         >
           <Trash2 className="w-5 h-5 mr-2" />
           Eliminar
         </button>
         <button
           onClick={onEditRoutine}
-          className="w-full bg-gray-200 text-gray-800 py-4 px-6 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center"
+          className="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-4 px-6 rounded-xl font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
         >
           <Edit className="w-5 h-5 mr-2" />
           Editar

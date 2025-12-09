@@ -388,8 +388,8 @@ export function WorkoutSession({
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Duración de descanso (segundos)</h4>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Duración de descanso (segundos)</h4>
         <div className="flex items-center space-x-4">
           <input
             type="range"
@@ -403,7 +403,7 @@ export function WorkoutSession({
           <input
             type="number"
             min={5}
-            className="w-20 px-2 py-1 border border-gray-300 rounded-lg text-center"
+            className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={restDuration}
             onChange={(e) => setRestDuration(Math.max(5, Number(e.target.value) || 0))}
           />
@@ -412,7 +412,7 @@ export function WorkoutSession({
           Este valor se guardará como preferencia para tus próximos descansos.
         </p>
         <div className="flex flex-col gap-1 mt-4">
-          <label className="flex items-center justify-between text-sm text-gray-700">
+          <label className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
             <span>Vibración al finalizar el descanso</span>
             <button
               type="button"
@@ -445,8 +445,8 @@ export function WorkoutSession({
       </div>
 
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">{routine.name}</h2>
-        <p className="text-gray-600">Registra tu entrenamiento</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{routine.name}</h2>
+        <p className="text-gray-600 dark:text-gray-400">Registra tu entrenamiento</p>
       </div>
 
       <div className="space-y-6 mb-8">
@@ -456,8 +456,8 @@ export function WorkoutSession({
           );
 
           return (
-            <div key={exercise.id} className="bg-white border border-gray-200 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">{exercise.name}</h3>
+            <div key={exercise.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{exercise.name}</h3>
 
               {(exercise.technique || exercise.repRange) && (
                 <div className="flex flex-wrap gap-2 text-xs mb-4">
@@ -477,12 +477,12 @@ export function WorkoutSession({
               )}
 
               {previousWorkout && (
-                <div className="bg-gray-50 border border-dashed border-gray-200 rounded-lg p-3 mb-4">
-                  <div className="flex items-center text-sm font-semibold text-gray-600 mb-2">
+                <div className="bg-gray-50 dark:bg-gray-700/50 border border-dashed border-gray-200 dark:border-gray-600 rounded-lg p-3 mb-4">
+                  <div className="flex items-center text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
                     <History className="w-4 h-4 mr-2" /> Última semana
                   </div>
                   {!previousExercise ? (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Sin registros previos para este ejercicio.
                     </p>
                   ) : (
@@ -490,7 +490,7 @@ export function WorkoutSession({
                       {previousExercise.sets.map((set, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between text-sm text-gray-600"
+                          className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400"
                         >
                           <span className="font-medium">Serie {index + 1}</span>
                           <span>
@@ -506,7 +506,7 @@ export function WorkoutSession({
               <div className="space-y-3 mb-4">
                 {exercise.sets.map((set, setIndex) => (
                   <div key={setIndex} className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <span className="text-sm font-medium text-gray-600 w-7 text-center sm:text-left sm:w-8">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-7 text-center sm:text-left sm:w-8">
                       {setIndex + 1}
                     </span>
                     <div className="flex items-center space-x-2">
@@ -514,27 +514,27 @@ export function WorkoutSession({
                         type="number"
                         value={set.weight || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'weight', Number(e.target.value))}
-                        className="w-16 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-16 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0"
                       />
-                      <span className="text-sm text-gray-500">kg</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">kg</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <input
                         type="number"
                         value={set.reps || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'reps', Number(e.target.value))}
-                        className="w-16 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-16 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0"
                       />
-                      <span className="text-sm text-gray-500">reps</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">reps</span>
                     </div>
 
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:ml-auto">
                       <button
                         type="button"
                         onClick={() => startRestTimer(exercise.id, setIndex)}
-                        className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-lg hover:bg-green-100 w-full sm:w-auto"
+                        className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 w-full sm:w-auto"
                       >
                         {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex
                           ? 'Reiniciar'
@@ -559,36 +559,42 @@ export function WorkoutSession({
                 ))}
               </div>
 
-              {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === null && (
-                <div className="flex flex-wrap items-center justify-between gap-3 bg-green-50 text-green-700 px-3 py-2 rounded-lg mb-4">
-                  <span className="text-sm font-semibold">Descanso en curso: {formatTime(restRemaining)}</span>
-                  <div className="flex items-center gap-2 text-xs">
-                    <button onClick={() => startRestTimer(exercise.id, null)} className="underline">Reiniciar</button>
-                    <button onClick={cancelRestTimer} className="underline">Cancelar</button>
+              {
+                isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === null && (
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-2 rounded-lg mb-4">
+                    <span className="text-sm font-semibold">Descanso en curso: {formatTime(restRemaining)}</span>
+                    <div className="flex items-center gap-2 text-xs">
+                      <button onClick={() => startRestTimer(exercise.id, null)} className="underline">Reiniciar</button>
+                      <button onClick={cancelRestTimer} className="underline">Cancelar</button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }
 
-              {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex !== null && (
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <span>
-                    Descansando para {activeRest.setIndex !== null ? `serie ${activeRest.setIndex + 1}` : 'este ejercicio'}
-                  </span>
-                  <button onClick={cancelRestTimer} className="text-red-500 font-semibold">
-                    Cancelar
+              {
+                isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex !== null && (
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    <span>
+                      Descansando para {activeRest.setIndex !== null ? `serie ${activeRest.setIndex + 1}` : 'este ejercicio'}
+                    </span>
+                    <button onClick={cancelRestTimer} className="text-red-500 font-semibold">
+                      Cancelar
+                    </button>
+                  </div>
+                )
+              }
+
+              {
+                !isResting && (
+                  <button
+                    type="button"
+                    onClick={() => startRestTimer(exercise.id, null)}
+                    className="mb-4 w-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    Iniciar descanso general
                   </button>
-                </div>
-              )}
-
-              {!isResting && (
-                <button
-                  type="button"
-                  onClick={() => startRestTimer(exercise.id, null)}
-                  className="mb-4 w-full text-sm bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
-                >
-                  Iniciar descanso general
-                </button>
-              )}
+                )
+              }
 
               <button
                 onClick={() => addSet(exercise.id)}
@@ -599,28 +605,28 @@ export function WorkoutSession({
               </button>
 
               {/* Campo de notas */}
-              <div className="border-t border-gray-100 pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                   <MessageSquare className="w-4 h-4 mr-1" />
                   Notas
                 </label>
                 <textarea
                   value={exercise.notes || ''}
                   onChange={(e) => updateNotes(exercise.id, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   rows={2}
                   placeholder="Añade comentarios sobre este ejercicio..."
                 />
               </div>
-            </div>
+            </div >
           );
         })}
-      </div>
+      </div >
 
       <div className="flex space-x-3">
         <button
           onClick={onCancel}
-          className="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-400 transition-colors"
+          className="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-semibold hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
         >
           Cancelar
         </button>
@@ -632,6 +638,6 @@ export function WorkoutSession({
           Guardar Entreno
         </button>
       </div>
-    </div>
+    </div >
   );
 }

@@ -36,26 +36,26 @@ export function CreateRoutine({
   };
 
   const updateExerciseName = (exerciseId: string, name: string) => {
-    setExercises(exercises.map(ex => 
+    setExercises(exercises.map(ex =>
       ex.id === exerciseId ? { ...ex, name } : ex
     ));
   };
 
   const updateExerciseTechnique = (exerciseId: string, technique: string) => {
-    setExercises(exercises.map(ex => 
+    setExercises(exercises.map(ex =>
       ex.id === exerciseId ? { ...ex, technique } : ex
     ));
   };
 
   const updateExerciseRepRange = (exerciseId: string, repRange: string) => {
-    setExercises(exercises.map(ex => 
+    setExercises(exercises.map(ex =>
       ex.id === exerciseId ? { ...ex, repRange } : ex
     ));
   };
 
   const addSet = (exerciseId: string) => {
     setExercises(exercises.map(ex =>
-      ex.id === exerciseId 
+      ex.id === exerciseId
         ? { ...ex, sets: [...ex.sets, { weight: 0, reps: 0 }] }
         : ex
     ));
@@ -65,11 +65,11 @@ export function CreateRoutine({
     setExercises(exercises.map(ex =>
       ex.id === exerciseId
         ? {
-            ...ex,
-            sets: ex.sets.map((set, index) =>
-              index === setIndex ? { ...set, [field]: value } : set
-            )
-          }
+          ...ex,
+          sets: ex.sets.map((set, index) =>
+            index === setIndex ? { ...set, [field]: value } : set
+          )
+        }
         : ex
     ));
   };
@@ -120,21 +120,21 @@ export function CreateRoutine({
   return (
     <div className="p-4 pb-20">
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Nombre de la Rutina
         </label>
         <input
           type="text"
           value={routineName}
           onChange={(e) => setRoutineName(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Ej: Pecho y Tríceps"
         />
       </div>
 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Ejercicios</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ejercicios</h3>
           <button
             onClick={addExercise}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center"
@@ -146,13 +146,13 @@ export function CreateRoutine({
 
         <div className="space-y-6">
           {exercises.map((exercise) => (
-            <div key={exercise.id} className="bg-gray-50 rounded-xl p-4">
+            <div key={exercise.id} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
               <div className="flex items-center justify-between mb-4">
                 <input
                   type="text"
                   value={exercise.name}
                   onChange={(e) => updateExerciseName(exercise.id, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mr-3"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mr-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Nombre del ejercicio"
                 />
                 <button
@@ -166,26 +166,26 @@ export function CreateRoutine({
               {/* Nuevos campos para técnica y rango de reps */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                     Técnica última serie
                   </label>
                   <input
                     type="text"
                     value={exercise.technique || ''}
                     onChange={(e) => updateExerciseTechnique(exercise.id, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Ej: Al Fallo, Parciales, Myo-Reps"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                     Rango de reps esperadas
                   </label>
                   <input
                     type="text"
                     value={exercise.repRange || ''}
                     onChange={(e) => updateExerciseRepRange(exercise.id, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Ej: 8-12, 15-20"
                   />
                 </div>
@@ -194,7 +194,7 @@ export function CreateRoutine({
               <div className="space-y-3">
                 {exercise.sets.map((set, setIndex) => (
                   <div key={setIndex} className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-600 w-8">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
                       {setIndex + 1}
                     </span>
                     <div className="flex items-center space-x-2">
@@ -202,20 +202,20 @@ export function CreateRoutine({
                         type="number"
                         value={set.weight || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'weight', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center"
+                        className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0"
                       />
-                      <span className="text-sm text-gray-500">kg</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">kg</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <input
                         type="number"
                         value={set.reps || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'reps', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center"
+                        className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0"
                       />
-                      <span className="text-sm text-gray-500">reps</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">reps</span>
                     </div>
                     {exercise.sets.length > 1 && (
                       <button
@@ -244,7 +244,7 @@ export function CreateRoutine({
       <div className="flex space-x-3">
         <button
           onClick={onCancel}
-          className="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-400 transition-colors"
+          className="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-semibold hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
         >
           Cancelar
         </button>
