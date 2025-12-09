@@ -204,6 +204,7 @@ function App() {
           <WorkoutHistory
             workouts={workouts}
             onSelectWorkout={handleSelectWorkout}
+            onDeleteWorkout={handleDeleteWorkout}
           />
         )}
 

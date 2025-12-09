@@ -1,14 +1,14 @@
-import React from 'react';
-import { Calendar, TrendingUp, Clock } from 'lucide-react';
+﻿import { Calendar, TrendingUp, Clock, Trash2 } from 'lucide-react';
 import { Workout } from '../types';
-import { formatDate, formatDateShort } from '../utils/storage';
+import { formatDateShort } from '../utils/storage';
 
 interface WorkoutHistoryProps {
   workouts: Workout[];
   onSelectWorkout: (workout: Workout) => void;
+  onDeleteWorkout: (workoutId: string) => void;
 }
 
-export function WorkoutHistory({ workouts, onSelectWorkout }: WorkoutHistoryProps) {
+export function WorkoutHistory({ workouts, onSelectWorkout, onDeleteWorkout }: WorkoutHistoryProps) {
   const sortedWorkouts = [...workouts].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -21,6 +21,13 @@ export function WorkoutHistory({ workouts, onSelectWorkout }: WorkoutHistoryProp
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
+  };
+
+  const handleDelete = (e: React.MouseEvent, workoutId: string) => {
+    e.stopPropagation();
+    if (window.confirm('¿Eliminar este entrenamiento?')) {
+      onDeleteWorkout(workoutId);
+    }
   };
 
   return (
@@ -44,24 +51,33 @@ export function WorkoutHistory({ workouts, onSelectWorkout }: WorkoutHistoryProp
               onClick={() => onSelectWorkout(workout)}
               className="w-full bg-white border border-gray-200 rounded-xl p-4 text-left shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{workout.routineName}</h3>
                   <p className="text-gray-500 text-sm mt-1">
-                    {workout.exercises.length} ejercicios • {formatDuration(workout.duration || 0)}
+                    {workout.exercises.length} ejercicios  {formatDuration(workout.duration || 0)}
                   </p>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {formatDateShort(workout.date)}
-                  </div>
-                  {workout.duration && (
-                    <div className="flex items-center text-gray-400 text-xs mt-1">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {formatDuration(workout.duration)}
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="flex items-center text-gray-500 text-sm">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {formatDateShort(workout.date)}
                     </div>
-                  )}
+                    {workout.duration && (
+                      <div className="flex items-center text-gray-400 text-xs mt-1">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {formatDuration(workout.duration)}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => handleDelete(e, workout.id)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    aria-label="Eliminar entrenamiento"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             </button>
