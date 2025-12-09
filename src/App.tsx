@@ -87,6 +87,12 @@ function App() {
     setCurrentScreen('workout-detail');
   };
 
+  const handleDeleteWorkout = (workoutId: string) => {
+    setWorkouts(workouts.filter((workout) => workout.id !== workoutId));
+    setCurrentScreen('workout-history');
+    setSelectedWorkout(null);
+  };
+
   const handleTabChange = (tab: 'routines' | 'history') => {
     setActiveTab(tab);
     if (tab === 'routines') {
@@ -202,7 +208,10 @@ function App() {
         )}
 
         {currentScreen === 'workout-detail' && selectedWorkout && (
-          <WorkoutDetail workout={selectedWorkout} />
+          <WorkoutDetail
+            workout={selectedWorkout}
+            onDeleteWorkout={handleDeleteWorkout}
+          />
         )}
       </main>
 

@@ -1,4 +1,3 @@
-import { Routine, Workout } from '../types';
 
 export const storageKeys = {
   routines: 'gym-tracker-routines',

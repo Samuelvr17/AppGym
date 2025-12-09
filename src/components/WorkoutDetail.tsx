@@ -1,21 +1,28 @@
 
-import { Calendar, Target, Zap, MessageSquare, Clock } from 'lucide-react';
+import { Calendar, Target, Zap, MessageSquare, Clock, Trash2 } from 'lucide-react';
 import { Workout } from '../types';
 import { formatDate } from '../utils/storage';
 
 interface WorkoutDetailProps {
   workout: Workout;
+  onDeleteWorkout: (workoutId: string) => void;
 }
 
-export function WorkoutDetail({ workout }: WorkoutDetailProps) {
+export function WorkoutDetail({ workout, onDeleteWorkout }: WorkoutDetailProps) {
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este entrenamiento?')) {
+      onDeleteWorkout(workout.id);
+    }
   };
 
   return (
@@ -93,6 +100,16 @@ export function WorkoutDetail({ workout }: WorkoutDetailProps) {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-6">
+        <button
+          onClick={handleDelete}
+          className="w-full bg-red-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-red-600 transition-colors flex items-center justify-center"
+        >
+          <Trash2 className="w-5 h-5 mr-2" />
+          Eliminar Entrenamiento
+        </button>
       </div>
     </div>
   );

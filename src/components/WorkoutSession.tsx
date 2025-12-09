@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Check,
   Target,
@@ -190,7 +190,7 @@ export function WorkoutSession({
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
@@ -324,18 +324,18 @@ export function WorkoutSession({
     setExercises(exercises.map(ex =>
       ex.id === exerciseId
         ? {
-            ...ex,
-            sets: ex.sets.map((set, index) =>
-              index === setIndex ? { ...set, [field]: value } : set
-            )
-          }
+          ...ex,
+          sets: ex.sets.map((set, index) =>
+            index === setIndex ? { ...set, [field]: value } : set
+          )
+        }
         : ex
     ));
   };
 
   const addSet = (exerciseId: string) => {
     setExercises(exercises.map(ex =>
-      ex.id === exerciseId 
+      ex.id === exerciseId
         ? { ...ex, sets: [...ex.sets, { weight: 0, reps: 0 }] }
         : ex
     ));
@@ -419,14 +419,12 @@ export function WorkoutSession({
               role="switch"
               aria-checked={isVibrationEnabled}
               onClick={() => setIsVibrationEnabled(prev => !prev)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isVibrationEnabled ? 'bg-green-500' : 'bg-gray-300'
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isVibrationEnabled ? 'bg-green-500' : 'bg-gray-300'
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isVibrationEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVibrationEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
               />
             </button>
           </label>
