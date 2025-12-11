@@ -25,7 +25,23 @@ function App() {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   useEffect(() => {
     window.localStorage.removeItem(storageKeys.mesocycles);
-  }, []);
+
+    // Check for active workout session
+    const activeWorkoutJson = localStorage.getItem(storageKeys.activeWorkout);
+    if (activeWorkoutJson) {
+      try {
+        const activeWorkout = JSON.parse(activeWorkoutJson);
+        // Find the routine associated with the active workout
+        const routine = routines.find(r => r.id === activeWorkout.routineId);
+        if (routine) {
+          setSelectedRoutine(routine);
+          setCurrentScreen('workout-session');
+        }
+      } catch (error) {
+        console.error('Error restoring active workout:', error);
+      }
+    }
+  }, [routines]);
 
   const handleCreateRoutine = () => {
     setCurrentScreen('create-routine');

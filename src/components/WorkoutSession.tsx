@@ -14,7 +14,7 @@ import {
   Workout,
   Exercise,
 } from '../types';
-import { generateId } from '../utils/storage';
+import { generateId, storageKeys } from '../utils/storage';
 
 interface WorkoutSessionProps {
   routine: Routine;
@@ -30,7 +30,7 @@ export function WorkoutSession({
   onCancel,
 }: WorkoutSessionProps) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [workoutStartTime] = useState<number>(Date.now());
+  const [workoutStartTime, setWorkoutStartTime] = useState<number>(Date.now());
   const [workoutDuration, setWorkoutDuration] = useState<number>(0);
   const [restDuration, setRestDuration] = useState<number>(() => {
     if (typeof window === 'undefined') return 60;
@@ -113,6 +113,22 @@ export function WorkoutSession({
   }, []);
 
   useEffect(() => {
+    // Check for saved session
+    const savedSession = localStorage.getItem(storageKeys.activeWorkout);
+    if (savedSession) {
+      try {
+        const parsedSession = JSON.parse(savedSession);
+        // Only load if it matches the current routine
+        if (parsedSession.routineId === routine.id) {
+          setExercises(parsedSession.exercises);
+          setWorkoutStartTime(parsedSession.startTime);
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading saved workout session:', error);
+      }
+    }
+
     // Initialize with routine exercises but with empty weight/reps
     const workoutExercises = routine.exercises.map(exercise => ({
       ...exercise,
@@ -121,6 +137,19 @@ export function WorkoutSession({
     }));
     setExercises(workoutExercises);
   }, [routine]);
+
+  // Save session state whenever it changes
+  useEffect(() => {
+    if (exercises.length > 0) {
+      const sessionState = {
+        routineId: routine.id,
+        exercises,
+        startTime: workoutStartTime,
+        lastUpdated: Date.now()
+      };
+      localStorage.setItem(storageKeys.activeWorkout, JSON.stringify(sessionState));
+    }
+  }, [exercises, workoutStartTime, routine.id]);
 
   // Workout duration timer
   useEffect(() => {
@@ -373,6 +402,8 @@ export function WorkoutSession({
     };
 
     onSaveWorkout(workout);
+    // Clear saved session after successful save
+    localStorage.removeItem(storageKeys.activeWorkout);
   };
 
   return (

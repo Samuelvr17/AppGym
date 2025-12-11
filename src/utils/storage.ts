@@ -3,6 +3,7 @@ export const storageKeys = {
   routines: 'gym-tracker-routines',
   workouts: 'gym-tracker-workouts',
   mesocycles: 'gym-tracker-mesocycles',
+  activeWorkout: 'gym-tracker-active-workout',
 };
 
 export function generateId(): string {
