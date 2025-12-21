@@ -34,21 +34,15 @@ export function WorkoutSession({
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [workoutStartTime, setWorkoutStartTime] = useState<number>(Date.now());
   const [workoutDuration, setWorkoutDuration] = useState<number>(0);
-  const [restDuration, setRestDuration] = useState<number>(() => {
-    if (typeof window === 'undefined') return 60;
-    const saved = localStorage.getItem('restDuration');
-    return saved ? Number(saved) : 60;
-  });
+  const [restDuration] = useState<number>(180);
   const [restRemaining, setRestRemaining] = useState<number>(0);
   const [isResting, setIsResting] = useState<boolean>(false);
-  const [isVibrationEnabled, setIsVibrationEnabled] = useState<boolean>(() => {
+  const [isVibrationEnabled] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('restVibrationEnabled');
     return saved ? saved === 'true' : true;
   });
   const [activeRest, setActiveRest] = useState<{ exerciseId: string; setIndex: number | null } | null>(null);
-  const [wakeLockWarning, setWakeLockWarning] = useState<string>('');
-  const [notificationWarning, setNotificationWarning] = useState<string>('');
   const audioContextRef = useRef<AudioContext | null>(null);
   const restIntervalRef = useRef<number | null>(null);
   const restStartTimeRef = useRef<number | null>(null);
@@ -83,7 +77,6 @@ export function WorkoutSession({
     };
 
     if (!nav.wakeLock?.request) {
-      setWakeLockWarning('Tu navegador no soporta mantener la pantalla activa durante el descanso.');
       return;
     }
 
@@ -91,14 +84,12 @@ export function WorkoutSession({
       const sentinel = await nav.wakeLock.request('screen');
       if (sentinel) {
         wakeLockRef.current = sentinel;
-        setWakeLockWarning('');
         sentinel.addEventListener('release', () => {
           wakeLockRef.current = null;
         });
       }
     } catch (error) {
       console.warn('No se pudo activar el wake lock', error);
-      setWakeLockWarning('No se pudo mantener la pantalla activa. Tu dispositivo podría bloquearse durante el descanso.');
     }
   }, []);
 
@@ -179,12 +170,10 @@ export function WorkoutSession({
     if (typeof window === 'undefined') return;
 
     if (!('Notification' in window) || typeof Notification.requestPermission !== 'function') {
-      setNotificationWarning('Tu navegador no soporta notificaciones de descanso.');
       return;
     }
 
     if (!window.isSecureContext) {
-      setNotificationWarning('Las notificaciones requieren una conexión segura (HTTPS).');
       return;
     }
 
@@ -192,19 +181,12 @@ export function WorkoutSession({
       Notification.requestPermission()
         .then(permission => {
           if (permission !== 'granted') {
-            setNotificationWarning('Activa las notificaciones del navegador para recibir avisos de descanso.');
-          } else {
-            setNotificationWarning('');
+            // Permission denied
           }
         })
         .catch(error => {
           console.warn('No se pudo solicitar permiso para notificaciones', error);
-          setNotificationWarning('No se pudo solicitar permiso para notificaciones.');
         });
-    } else if (Notification.permission !== 'granted') {
-      setNotificationWarning('Activa las notificaciones del navegador para recibir avisos de descanso.');
-    } else {
-      setNotificationWarning('');
     }
   }, []);
 
@@ -244,7 +226,6 @@ export function WorkoutSession({
         });
       } catch (error) {
         console.warn('No se pudo mostrar la notificación de descanso', error);
-        setNotificationWarning('No se pudo mostrar la notificación de descanso en tu navegador.');
       }
     } else {
       console.warn('Las notificaciones no están disponibles o el permiso fue denegado.');
@@ -351,6 +332,12 @@ export function WorkoutSession({
     releaseWakeLock();
   };
 
+  const adjustRestTime = (seconds: number) => {
+    if (!isResting) return;
+    restDurationRef.current = Math.max(0, restDurationRef.current + seconds);
+    updateRestRemaining();
+  };
+
   const updateSet = (exerciseId: string, setIndex: number, field: 'weight' | 'reps', value: number) => {
     setExercises(exercises.map(ex =>
       ex.id === exerciseId
@@ -435,61 +422,7 @@ export function WorkoutSession({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Duración de descanso (segundos)</h4>
-        <div className="flex items-center space-x-4">
-          <input
-            type="range"
-            min={15}
-            max={240}
-            step={5}
-            value={restDuration}
-            onChange={(e) => setRestDuration(Number(e.target.value))}
-            className="flex-1"
-          />
-          <input
-            type="number"
-            min={5}
-            className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={restDuration}
-            onChange={(e) => setRestDuration(Math.max(5, Number(e.target.value) || 0))}
-          />
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Este valor se guardará como preferencia para tus próximos descansos.
-        </p>
-        <div className="flex flex-col gap-1 mt-4">
-          <label className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
-            <span>Vibración al finalizar el descanso</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isVibrationEnabled}
-              onClick={() => setIsVibrationEnabled(prev => !prev)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isVibrationEnabled ? 'bg-green-500' : 'bg-gray-300'
-                }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVibrationEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-              />
-            </button>
-          </label>
-          <p className="text-xs text-gray-500">
-            La vibración solo funciona en dispositivos compatibles.
-          </p>
-        </div>
-        {wakeLockWarning && (
-          <p className="text-xs text-amber-600 mt-2">
-            {wakeLockWarning}
-          </p>
-        )}
-        {notificationWarning && (
-          <p className="text-xs text-amber-600 mt-2">
-            {notificationWarning}
-          </p>
-        )}
-      </div>
+
 
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{routine.name}</h2>
@@ -603,19 +536,40 @@ export function WorkoutSession({
                     </div>
 
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:ml-auto">
-                      <button
-                        type="button"
-                        onClick={() => startRestTimer(exercise.id, setIndex)}
-                        className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 w-full sm:w-auto"
-                      >
-                        {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex
-                          ? 'Reiniciar'
-                          : 'Desc.'}
-                      </button>
-                      {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex && (
-                        <span className="text-center text-sm font-semibold text-green-600">
-                          {formatTime(restRemaining)}
-                        </span>
+                      {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex ? (
+                        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 rounded-lg px-2 py-1.5 border border-green-100 dark:border-green-800/50 shadow-sm w-full sm:w-auto min-w-[180px]">
+                          <button
+                            onClick={() => adjustRestTime(-30)}
+                            className="text-xs font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 rounded px-2 py-1 transition-colors"
+                          >
+                            -30s
+                          </button>
+                          <span className="font-mono font-bold text-green-700 dark:text-green-400 text-sm mx-1">
+                            {formatTime(restRemaining)}
+                          </span>
+                          <button
+                            onClick={() => adjustRestTime(30)}
+                            className="text-xs font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 rounded px-2 py-1 transition-colors"
+                          >
+                            +30s
+                          </button>
+                          <div className="w-px h-4 bg-green-200 dark:bg-green-700 mx-2"></div>
+                          <button
+                            onClick={cancelRestTimer}
+                            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded p-1 transition-colors"
+                            title="Detener"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => startRestTimer(exercise.id, setIndex)}
+                          className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 w-full sm:w-auto"
+                        >
+                          Desc.
+                        </button>
                       )}
                     </div>
 
@@ -631,42 +585,7 @@ export function WorkoutSession({
                 ))}
               </div>
 
-              {
-                isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === null && (
-                  <div className="flex flex-wrap items-center justify-between gap-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-2 rounded-lg mb-4">
-                    <span className="text-sm font-semibold">Descanso en curso: {formatTime(restRemaining)}</span>
-                    <div className="flex items-center gap-2 text-xs">
-                      <button onClick={() => startRestTimer(exercise.id, null)} className="underline">Reiniciar</button>
-                      <button onClick={cancelRestTimer} className="underline">Cancelar</button>
-                    </div>
-                  </div>
-                )
-              }
 
-              {
-                isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex !== null && (
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
-                    <span>
-                      Descansando para {activeRest.setIndex !== null ? `serie ${activeRest.setIndex + 1}` : 'este ejercicio'}
-                    </span>
-                    <button onClick={cancelRestTimer} className="text-red-500 font-semibold">
-                      Cancelar
-                    </button>
-                  </div>
-                )
-              }
-
-              {
-                !isResting && (
-                  <button
-                    type="button"
-                    onClick={() => startRestTimer(exercise.id, null)}
-                    className="mb-4 w-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-                  >
-                    Iniciar descanso general
-                  </button>
-                )
-              }
 
               <button
                 onClick={() => addSet(exercise.id)}
