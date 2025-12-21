@@ -174,8 +174,8 @@ export function CreateRoutine({
                     onClick={() => moveExercise(exercises.indexOf(exercise), 'up')}
                     disabled={exercises.indexOf(exercise) === 0}
                     className={`p-2 rounded-lg transition-colors ${exercises.indexOf(exercise) === 0
-                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                        : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                      : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
                       }`}
                     title="Mover arriba"
                   >
@@ -185,8 +185,8 @@ export function CreateRoutine({
                     onClick={() => moveExercise(exercises.indexOf(exercise), 'down')}
                     disabled={exercises.indexOf(exercise) === exercises.length - 1}
                     className={`p-2 rounded-lg transition-colors ${exercises.indexOf(exercise) === exercises.length - 1
-                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                        : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                      : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
                       }`}
                     title="Mover abajo"
                   >
@@ -213,7 +213,7 @@ export function CreateRoutine({
                     value={exercise.technique || ''}
                     onChange={(e) => updateExerciseTechnique(exercise.id, e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Ej: Al Fallo, Parciales, Myo-Reps"
+                    placeholder="Ej: Al Fallo, Parciales..."
                   />
                 </div>
                 <div>
@@ -232,29 +232,29 @@ export function CreateRoutine({
 
               <div className="space-y-3">
                 {exercise.sets.map((set, setIndex) => (
-                  <div key={setIndex} className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
+                  <div key={setIndex} className="flex items-center space-x-2 xs:space-x-3">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-6 xs:w-8">
                       {setIndex + 1}
                     </span>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 xs:space-x-2">
                       <input
                         type="number"
                         value={set.weight || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'weight', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-14 xs:w-16 sm:w-20 px-2 xs:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0"
                       />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">kg</span>
+                      <span className="text-xs xs:text-sm text-gray-500 dark:text-gray-400">kg</span>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 xs:space-x-2">
                       <input
                         type="number"
                         value={set.reps || ''}
                         onChange={(e) => updateSet(exercise.id, setIndex, 'reps', Number(e.target.value))}
-                        className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-14 xs:w-16 sm:w-20 px-2 xs:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0"
                       />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">reps</span>
+                      <span className="text-xs xs:text-sm text-gray-500 dark:text-gray-400">reps</span>
                     </div>
                     {exercise.sets.length > 1 && (
                       <button
@@ -280,7 +280,7 @@ export function CreateRoutine({
         </div>
       </div>
 
-      <div className="flex space-x-3">
+      <div className="flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-3">
         <button
           onClick={onCancel}
           className="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-semibold hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
