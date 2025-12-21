@@ -7,7 +7,9 @@ import {
   X,
   MessageSquare,
   Clock,
-  History,
+  ArrowUp,
+  ArrowDown,
+  History as HistoryIcon,
 } from 'lucide-react';
 import {
   Routine,
@@ -378,6 +380,20 @@ export function WorkoutSession({
     ));
   };
 
+  const moveExercise = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === exercises.length - 1)
+    ) {
+      return;
+    }
+
+    const newExercises = [...exercises];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newExercises[index], newExercises[targetIndex]] = [newExercises[targetIndex], newExercises[index]];
+    setExercises(newExercises);
+  };
+
   const updateNotes = (exerciseId: string, notes: string) => {
     setExercises(exercises.map(ex =>
       ex.id === exerciseId ? { ...ex, notes } : ex
@@ -488,7 +504,33 @@ export function WorkoutSession({
 
           return (
             <div key={exercise.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{exercise.name}</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white">{exercise.name}</h3>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => moveExercise(exercises.indexOf(exercise), 'up')}
+                    disabled={exercises.indexOf(exercise) === 0}
+                    className={`p-1 rounded-lg transition-colors ${exercises.indexOf(exercise) === 0
+                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                      : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                      }`}
+                    title="Mover arriba"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => moveExercise(exercises.indexOf(exercise), 'down')}
+                    disabled={exercises.indexOf(exercise) === exercises.length - 1}
+                    className={`p-1 rounded-lg transition-colors ${exercises.indexOf(exercise) === exercises.length - 1
+                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                      : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                      }`}
+                    title="Mover abajo"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
 
               {(exercise.technique || exercise.repRange) && (
                 <div className="flex flex-wrap gap-2 text-xs mb-4">
@@ -506,11 +548,10 @@ export function WorkoutSession({
                   )}
                 </div>
               )}
-
               {previousWorkout && (
                 <div className="bg-gray-50 dark:bg-gray-700/50 border border-dashed border-gray-200 dark:border-gray-600 rounded-lg p-3 mb-4">
                   <div className="flex items-center text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
-                    <History className="w-4 h-4 mr-2" /> Última semana
+                    <HistoryIcon className="w-4 h-4 mr-2" /> Última semana
                   </div>
                   {!previousExercise ? (
                     <p className="text-sm text-gray-500 dark:text-gray-400">

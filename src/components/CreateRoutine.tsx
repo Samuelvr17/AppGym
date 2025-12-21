@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { Routine, Exercise } from '../types';
 import { generateId } from '../utils/storage';
 
@@ -86,6 +86,20 @@ export function CreateRoutine({
     setExercises(exercises.filter(ex => ex.id !== exerciseId));
   };
 
+  const moveExercise = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === exercises.length - 1)
+    ) {
+      return;
+    }
+
+    const newExercises = [...exercises];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newExercises[index], newExercises[targetIndex]] = [newExercises[targetIndex], newExercises[index]];
+    setExercises(newExercises);
+  };
+
   const handleSave = () => {
     if (!routineName.trim()) {
       alert('Por favor, ingresa un nombre para la rutina');
@@ -155,12 +169,37 @@ export function CreateRoutine({
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mr-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Nombre del ejercicio"
                 />
-                <button
-                  onClick={() => removeExercise(exercise.id)}
-                  className="text-red-500 hover:text-red-700 p-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => moveExercise(exercises.indexOf(exercise), 'up')}
+                    disabled={exercises.indexOf(exercise) === 0}
+                    className={`p-2 rounded-lg transition-colors ${exercises.indexOf(exercise) === 0
+                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                      }`}
+                    title="Mover arriba"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => moveExercise(exercises.indexOf(exercise), 'down')}
+                    disabled={exercises.indexOf(exercise) === exercises.length - 1}
+                    className={`p-2 rounded-lg transition-colors ${exercises.indexOf(exercise) === exercises.length - 1
+                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                      }`}
+                    title="Mover abajo"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => removeExercise(exercise.id)}
+                    className="text-red-500 hover:text-red-700 p-2"
+                    title="Eliminar ejercicio"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Nuevos campos para técnica y rango de reps */}
