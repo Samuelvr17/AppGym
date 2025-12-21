@@ -535,9 +535,18 @@ export function WorkoutSession({
                       <span className="text-sm text-gray-500 dark:text-gray-400">reps</span>
                     </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:ml-auto">
+                    {exercise.sets.length > 1 && (
+                      <button
+                        onClick={() => removeSet(exercise.id, setIndex)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    <div className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:ml-auto ${isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex ? 'w-full items-center justify-center sm:w-auto' : ''}`}>
                       {isResting && activeRest?.exerciseId === exercise.id && activeRest.setIndex === setIndex ? (
-                        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 rounded-lg px-2 py-1.5 border border-green-100 dark:border-green-800/50 shadow-sm w-full sm:w-auto min-w-[180px]">
+                        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 rounded-lg px-2 py-1.5 border border-green-100 dark:border-green-800/50 shadow-sm w-auto min-w-[180px]">
                           <button
                             onClick={() => adjustRestTime(-30)}
                             className="text-xs font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 rounded px-2 py-1 transition-colors"
@@ -573,14 +582,7 @@ export function WorkoutSession({
                       )}
                     </div>
 
-                    {exercise.sets.length > 1 && (
-                      <button
-                        onClick={() => removeSet(exercise.id, setIndex)}
-                        className="self-end text-red-500 hover:text-red-700 p-1 sm:self-auto"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
+
                   </div>
                 ))}
               </div>
