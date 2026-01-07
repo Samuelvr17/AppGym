@@ -56,7 +56,7 @@ export function RoutineDetail({
                 {exercise.repRange && (
                   <div className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
                     <Target className="w-3 h-3 mr-1" />
-                    {exercise.repRange} reps
+                    {exercise.repRange}
                   </div>
                 )}
                 {exercise.technique && (

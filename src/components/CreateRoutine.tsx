@@ -212,7 +212,7 @@ export function CreateRoutine({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Técnica última serie
+                    Técnica
                   </label>
                   <input
                     type="text"
