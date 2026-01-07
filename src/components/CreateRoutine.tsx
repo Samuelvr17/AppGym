@@ -16,6 +16,12 @@ export function CreateRoutine({
 }: CreateRoutineProps) {
   const [routineName, setRoutineName] = useState('');
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [showTutorials, setShowTutorials] = useState(false);
+
+  useEffect(() => {
+    const tutorialMode = localStorage.getItem('gym-tracker-tutorial-mode');
+    setShowTutorials(tutorialMode === 'true');
+  }, []);
 
   useEffect(() => {
     if (routine) {
@@ -234,18 +240,20 @@ export function CreateRoutine({
                     placeholder="Ej: 8-12, 15-20"
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Link video tutorial (opcional)
-                  </label>
-                  <input
-                    type="url"
-                    value={exercise.videoUrl || ''}
-                    onChange={(e) => updateExerciseVideoUrl(exercise.id, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="https://youtube.com/... o https://tiktok.com/..."
-                  />
-                </div>
+                {showTutorials && (
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                      Link video tutorial (opcional)
+                    </label>
+                    <input
+                      type="url"
+                      value={exercise.videoUrl || ''}
+                      onChange={(e) => updateExerciseVideoUrl(exercise.id, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="https://youtube.com/... o https://tiktok.com/..."
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">
