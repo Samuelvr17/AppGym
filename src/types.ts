@@ -10,6 +10,7 @@ export interface Exercise {
   technique?: string; // Técnica para la última serie
   repRange?: string; // Rango de reps esperadas
   notes?: string; // Notas del ejercicio durante el entrenamiento
+  videoUrl?: string; // Link a video tutorial del ejercicio
 }
 
 export interface Routine {

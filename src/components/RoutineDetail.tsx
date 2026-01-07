@@ -1,5 +1,6 @@
 
-import { Play, Edit, Target, Zap, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Play, Edit, Target, Zap, Trash2, PlayCircle } from 'lucide-react';
 import { Routine } from '../types';
 
 interface RoutineDetailProps {
@@ -15,6 +16,17 @@ export function RoutineDetail({
   onEditRoutine,
   onDeleteRoutine,
 }: RoutineDetailProps) {
+  const [showTutorials, setShowTutorials] = useState(false);
+
+  useEffect(() => {
+    const tutorialMode = localStorage.getItem('gym-tracker-tutorial-mode');
+    setShowTutorials(tutorialMode === 'true');
+  }, []);
+
+  const handleVideoClick = (videoUrl: string) => {
+    window.open(videoUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="p-4 pb-24">
       <div className="mb-6">
@@ -25,7 +37,18 @@ export function RoutineDetail({
       <div className="space-y-4 mb-8">
         {routine.exercises.map((exercise) => (
           <div key={exercise.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{exercise.name}</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-white">{exercise.name}</h3>
+              {showTutorials && exercise.videoUrl && (
+                <button
+                  onClick={() => handleVideoClick(exercise.videoUrl!)}
+                  className="flex items-center text-red-500 hover:text-red-600 transition-colors"
+                  title="Ver video tutorial"
+                >
+                  <PlayCircle className="w-6 h-6" />
+                </button>
+              )}
+            </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{exercise.sets.length} series</p>
 
             {(exercise.technique || exercise.repRange) && (
